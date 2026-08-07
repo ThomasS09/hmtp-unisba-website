@@ -1,4 +1,5 @@
-import { useState } from 'react'
+import { useState, useEffect } from 'react'
+import axios from 'axios'
 
 export default function News() {
   const [selectedCategory, setSelectedCategory] = useState('Semua')
@@ -6,7 +7,7 @@ export default function News() {
 
   const categories = ['Semua', 'Kegiatan', 'Prestasi', 'Akademik', 'Sosial']
 
-  const articles = [
+  const fallbackArticles = [
     {
       id: 1,
       title: 'Kunjungan Industri Tambang 2026: Memahami Operasi Lapangan Secara Langsung',
@@ -48,6 +49,25 @@ export default function News() {
       gradient: 'from-amber-700/30 to-yellow-600/20'
     }
   ]
+
+  const [articles, setArticles] = useState(fallbackArticles)
+
+  // Fetch articles dynamically from the backend API
+  useEffect(() => {
+    // Modify URL once your backend friend hosts it (e.g. 'http://localhost:8000/api/news' or '/api/news')
+    const API_URL = 'http://localhost:8000/api/news' 
+    
+    axios.get(API_URL)
+      .then((res) => {
+        if (res.data && Array.isArray(res.data)) {
+          setArticles(res.data)
+        }
+      })
+      .catch((err) => {
+        console.warn('Backend database not connected. Using premium local fallback articles.', err.message)
+      })
+  }, [])
+
 
   const filteredArticles = articles.filter((art) => {
     const matchesCategory = selectedCategory === 'Semua' || art.category === selectedCategory

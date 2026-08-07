@@ -1,12 +1,11 @@
-import { useState } from 'react'
+import { useState, useEffect } from 'react'
+import axios from 'axios'
 
 export default function InformationBoard() {
   const [selectedTag, setSelectedTag] = useState('Semua')
   const [search, setSearch] = useState('')
 
-  const tags = ['Semua', 'Akademik', 'Beasiswa', 'Organisasi', 'Lainnya']
-
-  const announcements = [
+  const fallbackAnnouncements = [
     {
       id: 1,
       title: 'Jadwal Pengisian KRS Semester Ganjil 2026/2027',
@@ -44,6 +43,27 @@ export default function InformationBoard() {
       fileAttached: 'Ukuran_Jas_HMTP.xlsx'
     }
   ]
+
+  const [announcements, setAnnouncements] = useState(fallbackAnnouncements)
+
+  // Fetch announcements dynamically from the backend API
+  useEffect(() => {
+    // Modify URL once your backend friend hosts it (e.g. 'http://localhost:8000/api/announcements' or '/api/announcements')
+    const API_URL = 'http://localhost:8000/api/announcements' 
+    
+    axios.get(API_URL)
+      .then((res) => {
+        if (res.data && Array.isArray(res.data)) {
+          setAnnouncements(res.data)
+        }
+      })
+      .catch((err) => {
+        console.warn('Backend database not connected. Using premium local fallback announcements.', err.message)
+      })
+  }, [])
+
+  const tags = ['Semua', 'Akademik', 'Beasiswa', 'Organisasi', 'Lainnya']
+
 
   const filteredNotices = announcements.filter((notice) => {
     const matchesTag = selectedTag === 'Semua' || notice.category === selectedTag
