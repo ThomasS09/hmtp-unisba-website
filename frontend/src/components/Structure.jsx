@@ -87,30 +87,30 @@ export default function Structure() {
         {/* Section Header */}
         <div className="text-center max-w-3xl mx-auto mb-20">
           <div className="inline-flex items-center gap-2 px-3 py-1 rounded-full bg-primary/10 border border-primary/20 mb-4">
-            <span className="font-inter text-xs text-dark-gold font-bold tracking-wider uppercase">Struktur Kepengurusan</span>
+            <span className="font-inter text-xs text-primary font-bold tracking-wider uppercase">Struktur Kepengurusan</span>
           </div>
-          <h2 className="font-poppins font-black text-4xl md:text-5xl text-black">
+          <h2 className="font-poppins font-black text-4xl md:text-5xl text-white">
             Kabinet Adhikara Karsa
           </h2>
-          <p className="font-inter text-base text-gray-600 mt-4">
+          <p className="font-inter text-sm text-gray-400 mt-4">
             Daftar pengurus inti dan pembagian bidang kerja yang menggerakkan organisasi HMTP UNISBA periode ini.
           </p>
         </div>
 
         {/* Pengurus Inti Section */}
         <div className="mb-20">
-          <h3 className="font-poppins font-bold text-2xl text-black text-center mb-10">Pengurus Harian</h3>
+          <h3 className="font-poppins font-bold text-2xl text-white text-center mb-10">Pengurus Harian</h3>
           <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
             {pengurusInti.map((inti, index) => (
               <div 
                 key={index} 
-                className="bg-white p-6 rounded-2xl border border-gray-100 shadow-md hover:shadow-lg transition-shadow duration-300 text-center"
+                className="glass-panel p-6 rounded-2xl hover:border-primary/30 hover:shadow-[0_0_30px_rgba(255,212,0,0.05)] transition-all duration-300 text-center"
               >
                 <div className="w-12 h-12 bg-primary text-black font-bold rounded-full flex items-center justify-center mx-auto mb-4 font-poppins">
                   PH
                 </div>
-                <h4 className="font-poppins font-bold text-lg text-black mb-2">{inti.role}</h4>
-                <p className="font-inter text-xs text-gray-500 leading-relaxed">{inti.desc}</p>
+                <h4 className="font-poppins font-bold text-lg text-white mb-2">{inti.role}</h4>
+                <p className="font-inter text-xs text-gray-400 leading-relaxed">{inti.desc}</p>
               </div>
             ))}
           </div>
@@ -118,8 +118,8 @@ export default function Structure() {
 
         {/* Bidang/Divisi Grid Section */}
         <div>
-          <h3 className="font-poppins font-bold text-2xl text-black text-center mb-4">Bidang & Divisi Kerja</h3>
-          <p className="font-inter text-sm text-gray-500 text-center mb-10">
+          <h3 className="font-poppins font-bold text-2xl text-white text-center mb-4">Bidang & Divisi Kerja</h3>
+          <p className="font-inter text-sm text-gray-400 text-center mb-10">
             Klik pada kartu bidang untuk melihat program kerja dan detail fungsinya.
           </p>
 
@@ -128,18 +128,18 @@ export default function Structure() {
               <div 
                 key={bidang.id}
                 onClick={() => setActiveBidang(activeBidang === bidang.id ? null : bidang.id)}
-                className={`bg-white rounded-2xl border p-6 cursor-pointer transform hover:-translate-y-1 transition-all duration-300 ${
+                className={`glass-panel rounded-2xl p-6 cursor-pointer transform hover:-translate-y-1 transition-all duration-300 ${
                   activeBidang === bidang.id 
-                    ? 'border-primary ring-2 ring-primary/20 shadow-xl' 
-                    : 'border-gray-100 hover:border-primary/50 shadow-md hover:shadow-lg'
+                    ? 'border-primary/40 ring-1 ring-primary/20 shadow-[0_0_25px_rgba(255,212,0,0.05)] bg-white/[0.03]' 
+                    : 'hover:border-primary/30'
                 }`}
               >
                 <div className="flex items-center gap-4 mb-4">
                   <span className="text-3xl">{bidang.icon}</span>
-                  <h4 className="font-poppins font-bold text-lg text-black leading-tight">{bidang.title}</h4>
+                  <h4 className="font-poppins font-bold text-lg text-white leading-tight">{bidang.title}</h4>
                 </div>
 
-                <p className="font-inter text-xs text-gray-600 leading-relaxed mb-4">
+                <p className="font-inter text-xs text-gray-400 leading-relaxed mb-4">
                   {bidang.tugas}
                 </p>
 
@@ -147,11 +147,11 @@ export default function Structure() {
                 <div className={`transition-all duration-300 overflow-hidden ${
                   activeBidang === bidang.id ? 'max-h-[300px] opacity-100 mt-4' : 'max-h-0 opacity-0'
                 }`}>
-                  <div className="border-t border-gray-100 pt-4">
-                    <span className="font-poppins font-bold text-xs text-dark-gold uppercase tracking-wider block mb-2">Program & Aktivitas:</span>
+                  <div className="border-t border-white/10 pt-4">
+                    <span className="font-poppins font-bold text-xs text-primary uppercase tracking-wider block mb-2">Program & Aktivitas:</span>
                     <ul className="space-y-1.5">
                       {bidang.programs.map((prog, pIdx) => (
-                        <li key={pIdx} className="flex items-center gap-2 font-inter text-xs text-gray-700">
+                        <li key={pIdx} className="flex items-center gap-2 font-inter text-xs text-gray-300">
                           <span className="w-1.5 h-1.5 rounded-full bg-primary flex-shrink-0"></span>
                           {prog}
                         </li>
