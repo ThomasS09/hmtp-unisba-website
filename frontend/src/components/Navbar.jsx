@@ -43,7 +43,6 @@ export default function Navbar() {
       name: 'Layanan',
       id: 'layanan',
       items: [
-        { name: 'Papan Informasi', href: '#papan-informasi' },
         { name: 'Aspirasi & Kontak', href: '#aspirasi' }
       ]
     }

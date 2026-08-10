@@ -10,7 +10,6 @@ const VisionMission = React.lazy(() => import('./components/VisionMission'))
 const Structure = React.lazy(() => import('./components/Structure'))
 const Programs = React.lazy(() => import('./components/Programs'))
 const News = React.lazy(() => import('./components/News'))
-const InformationBoard = React.lazy(() => import('./components/InformationBoard'))
 const AspirationContact = React.lazy(() => import('./components/AspirationContact'))
 const Footer = React.lazy(() => import('./components/Footer'))
 
@@ -41,9 +40,6 @@ function App() {
         </div>
         <div className="performance-contain">
           <News />
-        </div>
-        <div className="performance-contain">
-          <InformationBoard />
         </div>
         <div className="performance-contain">
           <AspirationContact />
