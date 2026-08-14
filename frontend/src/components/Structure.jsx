@@ -1,80 +1,81 @@
 import { useState } from 'react'
 
+// Static data defined outside component — avoids re-declaration on every render
+const pengurusInti = [
+  { role: 'Ketua Umum', desc: 'Pimpinan tertinggi organisasi yang bertanggung jawab penuh atas jalannya himpunan.' },
+  { role: 'Wakil Ketua Umum', desc: 'Membantu Ketua Umum dalam memimpin, mengawasi, dan mengkoordinasikan bidang-bidang.' },
+  { role: 'Sekretaris Umum', desc: 'Mengkoordinasikan dan memastikan tertib administrasi serta tata kelola organisasi.' },
+  { role: 'Bendahara Umum', desc: 'Mengelola keuangan himpunan meliputi perencanaan, pengawasan, dan pelaporan anggaran.' },
+]
+
+const bidangData = [
+  {
+    id: 'kesekretariatan',
+    title: 'Kesekretariatan',
+    icon: '📁',
+    tugas: 'Mendukung pengelolaan administrasi, kebersihan, kerapian sekretariat, serta inventarisasi barang milik himpunan.',
+    programs: ['Pengelolaan Inventaris Himpunan', 'Penyusunan Arsip Kesekretariatan'],
+  },
+  {
+    id: 'media-informasi',
+    title: 'Media Komunikasi & Informasi',
+    icon: '📢',
+    tugas: 'Pusat pengelolaan informasi, publikasi, dokumentasi, dan media komunikasi HMTP UNISBA yang adaptif dan terintegrasi.',
+    programs: ['Booklet HMTP', 'Jakun Story Competition', 'HMTP One Data', 'Publikasi & Dokumentasi Kegiatan'],
+  },
+  {
+    id: 'kaderisasi',
+    title: 'Kaderisasi',
+    icon: '🤝',
+    tugas: 'Merancang dan mengembangkan sistem kaderisasi berorientasi pembinaan karakter, peningkatan kompetensi, serta regenerasi SDM.',
+    programs: ['PPMB (Program Pembinaan Mahasiswa Baru)', 'Blueprint PPMB', 'Jakun Day', 'Magang Himpunan', 'Mine Map'],
+  },
+  {
+    id: 'intrakampus',
+    title: 'Intrakampus',
+    icon: '🏫',
+    tugas: 'Jembatan strategis komunikasi dan kolaborasi antara HMTP dengan organisasi kemahasiswaan di tingkat universitas.',
+    programs: ['HMTP Anniversary', 'Mine Graduate', 'PIT (Performance & Integrity Tracking)', 'SEAM'],
+  },
+  {
+    id: 'ekstrakampus',
+    title: 'Ekstrakampus',
+    icon: '🌍',
+    tugas: 'Wadah mahasiswa dalam mengembangkan wawasan industri, relasi, dan kolaborasi eksternal dengan perusahaan, alumni, dan institusi.',
+    programs: ['Hubungan Industri & Alumni', 'Kunjungan Industri Tambang', 'Kerjasama Stakeholder Eksternal'],
+  },
+  {
+    id: 'kewirausahaan',
+    title: 'Kewirausahaan',
+    icon: '💰',
+    tugas: 'Motor penggerak pendapatan himpunan melalui unit usaha mandiri demi tercapainya kemandirian finansial organisasi.',
+    programs: ['Penyediaan Jaket Kuning & Jas Lab', 'MINE (Merchandise Inovatif)', 'BINA (Bisnis & Niaga Adaptif)'],
+  },
+  {
+    id: 'sosial-keagamaan',
+    title: 'Sosial & Keagamaan',
+    icon: '🕌',
+    tugas: "Wadah bersosialisasi dan meningkatkan nilai-nilai keislaman demi memperkuat pribadi Mujahid, Mujtahid, dan Mujaddid (3M).",
+    programs: ['GRANIT (Gema Ramadhan)', 'HMTP Peduli', "Sedekah Jum'at", 'HMTP Berbagi'],
+  },
+  {
+    id: 'seni-olahraga',
+    title: 'Seni & Olahraga',
+    icon: '⚽',
+    tugas: 'Wadah pembinaan minat bakat olahraga dan seni anggota untuk merajut kebersamaan serta menyalurkan potensi prestasi.',
+    programs: ['PORSETA (Pekan Olahraga Seni Tambang)', 'MFC (Mining Futsal Championship)', 'Sebat (Sehat Bareng Anak Tambang)', 'CINERGY'],
+  },
+  {
+    id: 'ilmu-keprofesian',
+    title: 'Keilmuan & Keprofesian',
+    icon: '⛏️',
+    tugas: 'Wadah strategis dalam meningkatkan kapasitas keilmuan akademik serta keahlian teknis pertambangan.',
+    programs: ['SEMPRO (Seminar Keprofesian)', 'U MINE FEST', 'MCU (Mining Class Upgrading)', 'FORTA (Forum Riset Tambang)', 'MASTA (Mining Software Training)'],
+  },
+]
+
 export default function Structure() {
   const [activeBidang, setActiveBidang] = useState(null)
-
-  const pengurusInti = [
-    { role: 'Ketua Umum', desc: 'Pimpinan tertinggi organisasi yang bertanggung jawab penuh atas jalannya himpunan.' },
-    { role: 'Wakil Ketua Umum', desc: 'Membantu Ketua Umum dalam memimpin, mengawasi, dan mengkoordinasikan bidang-bidang.' },
-    { role: 'Sekretaris Umum', desc: 'Mengkoordinasikan dan memastikan tertib administrasi serta tata kelola organisasi.' },
-    { role: 'Bendahara Umum', desc: 'Mengelola keuangan himpunan meliputi perencanaan, pengawasan, dan pelaporan anggaran.' }
-  ]
-
-  const bidangData = [
-    {
-      id: 'kesekretariatan',
-      title: 'Kesekretariatan',
-      icon: '📁',
-      tugas: 'Mendukung pengelolaan administrasi, kebersihan, kerapian sekretariat, serta inventarisasi barang milik himpunan.',
-      programs: ['Pengelolaan Inventaris Himpunan', 'Penyusunan Arsip Kesekretariatan']
-    },
-    {
-      id: 'media-informasi',
-      title: 'Media Komunikasi & Informasi',
-      icon: '📢',
-      tugas: 'Pusat pengelolaan informasi, publikasi, dokumentasi, dan media komunikasi HMTP UNISBA yang adaptif dan terintegrasi.',
-      programs: ['Booklet HMTP', 'Jakun Story Competition', 'HMTP One Data', 'Publikasi & Dokumentasi Kegiatan']
-    },
-    {
-      id: 'kaderisasi',
-      title: 'Kaderisasi',
-      icon: '🤝',
-      tugas: 'Merancang dan mengembangkan sistem kaderisasi berorientasi pembinaan karakter, peningkatan kompetensi, serta regenerasi SDM.',
-      programs: ['PPMB (Program Pembinaan Mahasiswa Baru)', 'Blueprint PPMB', 'Jakun Day', 'Magang Himpunan', 'Mine Map']
-    },
-    {
-      id: 'intrakampus',
-      title: 'Intrakampus',
-      icon: '🏫',
-      tugas: 'Jembatan strategis komunikasi dan kolaborasi antara HMTP dengan organisasi kemahasiswaan di tingkat universitas.',
-      programs: ['HMTP Anniversary', 'Mine Graduate', 'PIT (Performance & Integrity Tracking)', 'SEAM']
-    },
-    {
-      id: 'ekstrakampus',
-      title: 'Ekstrakampus',
-      icon: '🌍',
-      tugas: 'Wadah mahasiswa dalam mengembangkan wawasan industri, relasi, dan kolaborasi eksternal dengan perusahaan, alumni, dan institusi.',
-      programs: ['Hubungan Industri & Alumni', 'Kunjungan Industri Tambang', 'Kerjasama Stakeholder Eksternal']
-    },
-    {
-      id: 'kewirausahaan',
-      title: 'Kewirausahaan',
-      icon: '💰',
-      tugas: 'Motor penggerak pendapatan himpunan melalui unit usaha mandiri demi tercapainya kemandirian finansial organisasi.',
-      programs: ['Penyediaan Jaket Kuning & Jas Lab', 'MINE (Merchandise Inovatif)', 'BINA (Bisnis & Niaga Adaptif)']
-    },
-    {
-      id: 'sosial-keagamaan',
-      title: 'Sosial & Keagamaan',
-      icon: '🕌',
-      tugas: 'Wadah bersosialisasi dan meningkatkan nilai-nilai keislaman demi memperkuat pribadi Mujahid, Mujtahid, dan Mujaddid (3M).',
-      programs: ['GRANIT (Gema Ramadhan)', 'HMTP Peduli', 'Sedekah Jum\'at', 'HMTP Berbagi']
-    },
-    {
-      id: 'seni-olahraga',
-      title: 'Seni & Olahraga',
-      icon: '⚽',
-      tugas: 'Wadah pembinaan minat bakat olahraga dan seni anggota untuk merajut kebersamaan serta menyalurkan potensi prestasi.',
-      programs: ['PORSETA (Pekan Olahraga Seni Tambang)', 'MFC (Mining Futsal Championship)', 'Sebat (Sehat Bareng Anak Tambang)', 'CINERGY']
-    },
-    {
-      id: 'ilmu-keprofesian',
-      title: 'Keilmuan & Keprofesian',
-      icon: '⛏️',
-      tugas: 'Wadah strategis dalam meningkatkan kapasitas keilmuan akademik serta keahlian teknis pertambangan.',
-      programs: ['SEMPRO (Seminar Keprofesian)', 'U MINE FEST', 'MCU (Mining Class Upgrading)', 'FORTA (Forum Riset Tambang)', 'MASTA (Mining Software Training)']
-    }
-  ]
 
   return (
     <section id="structure" className="py-24 bg-light-gray relative overflow-hidden">
@@ -83,7 +84,7 @@ export default function Structure() {
       <div className="absolute bottom-1/4 left-0 w-80 h-80 bg-dark-gold/5 rounded-full blur-3xl"></div>
 
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 relative z-10">
-        
+
         {/* Section Header */}
         <div className="text-center max-w-3xl mx-auto mb-20">
           <div className="inline-flex items-center gap-2 px-3 py-1 rounded-full bg-primary/10 border border-primary/20 mb-4">
@@ -102,8 +103,8 @@ export default function Structure() {
           <h3 className="font-poppins font-bold text-2xl text-white text-center mb-10">Pengurus Harian</h3>
           <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
             {pengurusInti.map((inti, index) => (
-              <div 
-                key={index} 
+              <div
+                key={index}
                 className="glass-panel p-6 rounded-2xl hover:border-primary/30 hover:shadow-[0_0_30px_rgba(255,212,0,0.05)] transition-all duration-300 text-center"
               >
                 <div className="w-12 h-12 bg-primary text-black font-bold rounded-full flex items-center justify-center mx-auto mb-4 font-poppins">
@@ -125,12 +126,12 @@ export default function Structure() {
 
           <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
             {bidangData.map((bidang) => (
-              <div 
+              <div
                 key={bidang.id}
                 onClick={() => setActiveBidang(activeBidang === bidang.id ? null : bidang.id)}
                 className={`glass-panel rounded-2xl p-6 cursor-pointer transform hover:-translate-y-1 transition-all duration-300 ${
-                  activeBidang === bidang.id 
-                    ? 'border-primary/40 ring-1 ring-primary/20 shadow-[0_0_25px_rgba(255,212,0,0.05)] bg-white/[0.03]' 
+                  activeBidang === bidang.id
+                    ? 'border-primary/40 ring-1 ring-primary/20 shadow-[0_0_25px_rgba(255,212,0,0.05)] bg-white/[0.03]'
                     : 'hover:border-primary/30'
                 }`}
               >

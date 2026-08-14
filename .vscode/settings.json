@@ -1,7 +1,5 @@
 {
-  // Disable VS Code's built-in CSS validation to suppress false positive
-  // warnings for Tailwind CSS v4 at-rules like @theme, @utility, @variant, etc.
-  // Tailwind CSS IntelliSense extension handles CSS validation instead.
+ 
   "css.validate": false,
   "scss.validate": false,
   "less.validate": false

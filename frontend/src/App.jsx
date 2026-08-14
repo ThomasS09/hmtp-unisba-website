@@ -13,45 +13,32 @@ const News = React.lazy(() => import('./components/News'))
 const AspirationContact = React.lazy(() => import('./components/AspirationContact'))
 const Footer = React.lazy(() => import('./components/Footer'))
 
+const lazySections = [
+  History,
+  LogoMeaning,
+  About,
+  VisionMission,
+  Structure,
+  Programs,
+  News,
+  AspirationContact,
+  Footer,
+]
+
 function App() {
   return (
     <div className="bg-black text-white min-h-screen">
       <Navbar />
       <Hero />
       <Suspense fallback={<Skeleton />}>
-
-        <div className="performance-contain">
-          <History />
-        </div>
-        <div className="performance-contain">
-          <LogoMeaning />
-        </div>
-        <div className="performance-contain">
-          <About />
-        </div>
-        <div className="performance-contain">
-          <VisionMission />
-        </div>
-        <div className="performance-contain">
-          <Structure />
-        </div>
-        <div className="performance-contain">
-          <Programs />
-        </div>
-        <div className="performance-contain">
-          <News />
-        </div>
-        <div className="performance-contain">
-          <AspirationContact />
-        </div>
-        <div className="performance-contain">
-          <Footer />
-        </div>
+        {lazySections.map((Section, i) => (
+          <div key={i} className="performance-contain">
+            <Section />
+          </div>
+        ))}
       </Suspense>
     </div>
   )
 }
 
 export default App
-
-

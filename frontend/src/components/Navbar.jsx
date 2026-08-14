@@ -6,15 +6,8 @@ export default function Navbar() {
   const [activeDropdown, setActiveDropdown] = useState(null)
   const [scrolled, setScrolled] = useState(false)
 
-  // Track scroll position to change background transparency
   useEffect(() => {
-    const handleScroll = () => {
-      if (window.scrollY > 20) {
-        setScrolled(true)
-      } else {
-        setScrolled(false)
-      }
-    }
+    const handleScroll = () => setScrolled(window.scrollY > 20)
     window.addEventListener('scroll', handleScroll)
     return () => window.removeEventListener('scroll', handleScroll)
   }, [])
@@ -28,42 +21,40 @@ export default function Navbar() {
         { name: 'Arti Logo', href: '#logo-meaning' },
         { name: 'Kabinet', href: '#about' },
         { name: 'Visi & Misi', href: '#vision-mission' },
-        { name: 'Struktur Organisasi', href: '#structure' }
-      ]
+        { name: 'Struktur Organisasi', href: '#structure' },
+      ],
     },
     {
       name: 'Aktivitas',
       id: 'aktivitas',
       items: [
         { name: 'Program Kerja', href: '#programs' },
-        { name: 'Berita & Artikel', href: '#news' }
-      ]
+        { name: 'Berita & Artikel', href: '#news' },
+      ],
     },
     {
       name: 'Layanan',
       id: 'layanan',
-      items: [
-        { name: 'Aspirasi & Kontak', href: '#aspirasi' }
-      ]
-    }
+      items: [{ name: 'Aspirasi & Kontak', href: '#aspirasi' }],
+    },
   ]
 
   return (
     <nav className={`fixed top-0 left-0 w-full z-50 transition-all duration-500 ${
-      scrolled 
-        ? 'bg-black/90 border-b border-primary/20 backdrop-blur-lg py-4' 
+      scrolled
+        ? 'bg-black/90 border-b border-primary/20 backdrop-blur-lg py-4'
         : 'bg-transparent py-6'
     }`}>
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
         <div className="flex items-center justify-between">
-          
+
           {/* Logo & Branding */}
           <a href="#home" className="flex items-center gap-3 group">
             <div className="relative">
               <div className="absolute inset-0 bg-primary/25 rounded-full blur-sm group-hover:bg-primary/45 transition-all duration-300"></div>
-              <img 
-                src={logo} 
-                alt="Logo HMTP UNISBA" 
+              <img
+                src={logo}
+                alt="Logo HMTP UNISBA"
                 className="relative h-12 w-12 rounded-full border border-primary/50 object-cover"
               />
             </div>
@@ -81,22 +72,20 @@ export default function Navbar() {
             >
               Beranda
             </a>
-            
+
             {menuGroups.map((group) => (
-              <div 
-                key={group.id} 
+              <div
+                key={group.id}
                 className="relative group"
                 onMouseEnter={() => setActiveDropdown(group.id)}
                 onMouseLeave={() => setActiveDropdown(null)}
               >
-                <button
-                  className="flex items-center gap-1.5 font-inter text-sm text-gray-300 hover:text-primary font-semibold transition-colors py-2 cursor-pointer"
-                >
+                <button className="flex items-center gap-1.5 font-inter text-sm text-gray-300 hover:text-primary font-semibold transition-colors py-2 cursor-pointer">
                   {group.name}
-                  <svg 
-                    className={`h-4 w-4 transition-transform duration-300 ${activeDropdown === group.id ? 'rotate-180 text-primary' : 'text-gray-400'}`} 
-                    fill="none" 
-                    viewBox="0 0 24 24" 
+                  <svg
+                    className={`h-4 w-4 transition-transform duration-300 ${activeDropdown === group.id ? 'rotate-180 text-primary' : 'text-gray-400'}`}
+                    fill="none"
+                    viewBox="0 0 24 24"
                     stroke="currentColor"
                   >
                     <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 9l-7 7-7-7" />
@@ -105,8 +94,8 @@ export default function Navbar() {
 
                 {/* Dropdown Box */}
                 <div className={`absolute left-0 mt-1 w-56 rounded-xl border border-white/10 bg-black/95 backdrop-blur-xl p-2 shadow-2xl shadow-black/80 transition-all duration-300 origin-top-left ${
-                  activeDropdown === group.id 
-                    ? 'opacity-100 scale-100 translate-y-0 visible' 
+                  activeDropdown === group.id
+                    ? 'opacity-100 scale-100 translate-y-0 visible'
                     : 'opacity-0 scale-95 -translate-y-2 invisible pointer-events-none'
                 }`}>
                   <div className="flex flex-col gap-1">
@@ -158,7 +147,7 @@ export default function Navbar() {
           >
             Beranda
           </a>
-          
+
           {menuGroups.map((group) => (
             <div key={group.id} className="space-y-2">
               <div className="text-xs font-bold text-primary tracking-widest uppercase font-poppins px-1">
@@ -183,4 +172,3 @@ export default function Navbar() {
     </nav>
   )
 }
-

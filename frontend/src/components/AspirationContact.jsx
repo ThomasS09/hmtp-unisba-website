@@ -1,63 +1,65 @@
 import { useState } from 'react'
 
+// Static data defined outside component — avoids re-declaration on every render
+const initialFormData = {
+  name: '',
+  nim: '',
+  category: 'Saran',
+  message: '',
+}
+
+const socialChannels = [
+  {
+    name: 'Instagram',
+    handle: '@hmtpunisba',
+    url: 'https://instagram.com/hmtpunisba',
+    icon: '📸',
+    color: 'hover:border-pink-500/40 hover:shadow-[0_0_30px_rgba(236,72,153,0.15)] hover:text-pink-400',
+  },
+  {
+    name: 'TikTok',
+    handle: '@hmtp.unisba',
+    url: 'https://tiktok.com/@hmtp.unisba',
+    icon: '🎵',
+    color: 'hover:border-cyan-500/40 hover:shadow-[0_0_30px_rgba(6,182,212,0.15)] hover:text-cyan-400',
+  },
+  {
+    name: 'Gmail',
+    handle: 'Hmtp.adhikarakarsa@gmail.com',
+    url: 'mailto:Hmtp.adhikarakarsa@gmail.com',
+    icon: '✉️',
+    color: 'hover:border-red-500/40 hover:shadow-[0_0_30px_rgba(239,68,68,0.15)] hover:text-red-400',
+  },
+  {
+    name: 'WhatsApp Humas',
+    handle: '+62 812-1414-1983',
+    url: 'https://wa.me/6281214141983',
+    icon: '📞',
+    color: 'hover:border-emerald-500/40 hover:shadow-[0_0_30px_rgba(16,185,129,0.15)] hover:text-emerald-400',
+  },
+]
+
 export default function AspirationContact() {
-  const [formData, setFormData] = useState({
-    name: '',
-    nim: '',
-    category: 'Saran',
-    message: ''
-  })
+  const [formData, setFormData] = useState(initialFormData)
   const [submitted, setSubmitted] = useState(false)
 
   const handleSubmit = (e) => {
     e.preventDefault()
-    // Simulated form submission
     console.log('Submitted Aspiration:', formData)
     setSubmitted(true)
     setTimeout(() => {
       setSubmitted(false)
-      setFormData({ name: '', nim: '', category: 'Saran', message: '' })
+      setFormData(initialFormData)
     }, 4000)
   }
 
-  const socialChannels = [
-    {
-      name: 'Instagram',
-      handle: '@hmtpunisba',
-      url: 'https://instagram.com/hmtpunisba',
-      icon: '📸',
-      color: 'hover:border-pink-500/40 hover:shadow-[0_0_30px_rgba(236,72,153,0.15)] hover:text-pink-400'
-    },
-    {
-      name: 'TikTok',
-      handle: '@hmtp.unisba',
-      url: 'https://tiktok.com/@hmtp.unisba',
-      icon: '🎵',
-      color: 'hover:border-cyan-500/40 hover:shadow-[0_0_30px_rgba(6,182,212,0.15)] hover:text-cyan-400'
-    },
-    {
-      name: 'Gmail',
-      handle: 'Hmtp.adhikarakarsa@gmail.com',
-      url: 'mailto:Hmtp.adhikarakarsa@gmail.com',
-      icon: '✉️',
-      color: 'hover:border-red-500/40 hover:shadow-[0_0_30px_rgba(239,68,68,0.15)] hover:text-red-400'
-    },
-    {
-      name: 'WhatsApp Humas',
-      handle: '+62 812-1414-1983',
-      url: 'https://wa.me/6281214141983',
-      icon: '📞',
-      color: 'hover:border-emerald-500/40 hover:shadow-[0_0_30px_rgba(16,185,129,0.15)] hover:text-emerald-400'
-    }
-  ]
-
   return (
     <section id="aspirasi" className="py-24 bg-black text-white relative overflow-hidden">
-      {/* Background accents */}
+      {/* Background accent */}
       <div className="absolute bottom-0 right-0 w-[500px] h-[500px] rounded-full bg-primary/5 blur-3xl pointer-events-none"></div>
 
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 relative z-10">
-        
+
         {/* Section Header */}
         <div className="text-center max-w-3xl mx-auto mb-20">
           <div className="inline-flex items-center gap-2 px-3 py-1 rounded-full bg-white/5 border border-white/10 mb-4">
@@ -73,8 +75,8 @@ export default function AspirationContact() {
 
         {/* Form and Social Channels Grid */}
         <div className="grid grid-cols-1 lg:grid-cols-12 gap-12 items-stretch">
-          
-          {/* Left Column: Aspiration Form (7 cols) */}
+
+          {/* Left Column: Aspiration Form */}
           <div className="lg:col-span-7 glass-panel p-8 sm:p-10 rounded-3xl border border-white/10 flex flex-col justify-between">
             <div>
               <h3 className="font-poppins font-bold text-xl text-white mb-2">Formulir Kotak Aspirasi</h3>
@@ -91,8 +93,8 @@ export default function AspirationContact() {
                   <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
                     <div className="space-y-1.5">
                       <label className="font-inter text-xs text-gray-400 font-semibold uppercase tracking-wider pl-1">Nama Lengkap</label>
-                      <input 
-                        type="text" 
+                      <input
+                        type="text"
                         required
                         placeholder="Nama Anda"
                         value={formData.name}
@@ -102,8 +104,8 @@ export default function AspirationContact() {
                     </div>
                     <div className="space-y-1.5">
                       <label className="font-inter text-xs text-gray-400 font-semibold uppercase tracking-wider pl-1">NIM Mahasiswa</label>
-                      <input 
-                        type="text" 
+                      <input
+                        type="text"
                         required
                         placeholder="100703..."
                         value={formData.nim}
@@ -129,7 +131,7 @@ export default function AspirationContact() {
 
                   <div className="space-y-1.5">
                     <label className="font-inter text-xs text-gray-400 font-semibold uppercase tracking-wider pl-1">Isi Aspirasi & Kritik</label>
-                    <textarea 
+                    <textarea
                       required
                       rows={5}
                       placeholder="Tuliskan aspirasi Anda di sini secara rinci..."
@@ -139,7 +141,7 @@ export default function AspirationContact() {
                     ></textarea>
                   </div>
 
-                  <button 
+                  <button
                     type="submit"
                     className="w-full py-4 bg-primary hover:bg-dark-gold text-black font-poppins font-bold rounded-xl shadow-lg shadow-primary/10 hover:shadow-primary/25 transition-all duration-300 text-center text-sm cursor-pointer"
                   >
@@ -155,9 +157,9 @@ export default function AspirationContact() {
                 <h4 className="font-poppins font-bold text-sm text-primary">Google Form Resmi</h4>
                 <p className="font-inter text-xs text-gray-400 mt-1 max-w-sm">Anda juga dapat mengirimkan aspirasi melalui form Google Docs terstruktur kami.</p>
               </div>
-              <a 
-                href="https://docs.google.com/forms" 
-                target="_blank" 
+              <a
+                href="https://docs.google.com/forms"
+                target="_blank"
                 rel="noopener noreferrer"
                 className="px-6 py-3 bg-white/5 border border-white/10 hover:border-primary hover:bg-primary/10 text-white hover:text-primary font-inter text-xs font-bold rounded-lg transition-all duration-300 text-center whitespace-nowrap cursor-pointer"
               >
@@ -166,7 +168,7 @@ export default function AspirationContact() {
             </div>
           </div>
 
-          {/* Right Column: Social Channels (5 cols) */}
+          {/* Right Column: Social Channels */}
           <div className="lg:col-span-5 flex flex-col justify-between gap-6">
             <div className="glass-panel p-8 rounded-3xl border border-white/10 h-full flex flex-col justify-center">
               <h3 className="font-poppins font-bold text-xl text-white mb-2">Saluran Komunikasi Resmi</h3>
