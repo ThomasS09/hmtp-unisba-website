@@ -1,4 +1,5 @@
 import { useState } from 'react'
+import { submitAspiration } from '../services/api'
 
 // Static data defined outside component — avoids re-declaration on every render
 const initialFormData = {
@@ -42,15 +43,28 @@ const socialChannels = [
 export default function AspirationContact() {
   const [formData, setFormData] = useState(initialFormData)
   const [submitted, setSubmitted] = useState(false)
+  const [submitting, setSubmitting] = useState(false)
+  const [errorMessage, setErrorMessage] = useState('')
 
-  const handleSubmit = (e) => {
+  const handleSubmit = async (e) => {
     e.preventDefault()
-    console.log('Submitted Aspiration:', formData)
-    setSubmitted(true)
-    setTimeout(() => {
-      setSubmitted(false)
+    setSubmitting(true)
+    setErrorMessage('')
+    
+    try {
+      await submitAspiration(formData)
+      setSubmitted(true)
       setFormData(initialFormData)
-    }, 4000)
+      setTimeout(() => {
+        setSubmitted(false)
+      }, 5000)
+    } catch (err) {
+      console.error('Submit aspiration error:', err)
+      // Fallback user feedback if backend is un-reachable or error occurred
+      setErrorMessage(err?.response?.data?.message || 'Gagal mengirim aspirasi ke server. Silakan coba lagi.')
+    } finally {
+      setSubmitting(false)
+    }
   }
 
   return (
@@ -141,11 +155,25 @@ export default function AspirationContact() {
                     ></textarea>
                   </div>
 
+                  {errorMessage && (
+                    <div className="bg-red-500/10 border border-red-500/30 text-red-400 p-4 rounded-xl font-inter text-xs text-center">
+                      ⚠️ {errorMessage}
+                    </div>
+                  )}
+
                   <button
                     type="submit"
-                    className="w-full py-4 bg-primary hover:bg-dark-gold text-black font-poppins font-bold rounded-xl shadow-lg shadow-primary/10 hover:shadow-primary/25 transition-all duration-300 text-center text-sm cursor-pointer"
+                    disabled={submitting}
+                    className="w-full py-4 bg-primary hover:bg-dark-gold text-black font-poppins font-bold rounded-xl shadow-lg shadow-primary/10 hover:shadow-primary/25 transition-all duration-300 text-center text-sm cursor-pointer disabled:opacity-50 disabled:cursor-not-allowed flex items-center justify-center gap-2"
                   >
-                    Kirim Aspirasi
+                    {submitting ? (
+                      <>
+                        <span className="w-4 h-4 border-2 border-black border-t-transparent rounded-full animate-spin"></span>
+                        Mengirim Aspirasi...
+                      </>
+                    ) : (
+                      'Kirim Aspirasi'
+                    )}
                   </button>
                 </form>
               )}

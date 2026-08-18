@@ -1,5 +1,5 @@
 import { useState, useEffect } from 'react'
-import axios from 'axios'
+import { getNews } from '../services/api'
 
 // Static data defined outside component — avoids re-declaration on every render
 const categories = ['Semua', 'Kegiatan', 'Prestasi', 'Akademik', 'Sosial']
@@ -59,17 +59,28 @@ export default function News() {
   const [selectedCategory, setSelectedCategory] = useState('Semua')
   const [searchQuery, setSearchQuery] = useState('')
   const [articles, setArticles] = useState(fallbackArticles)
+  const [loading, setLoading] = useState(true)
+  const [isApiConnected, setIsApiConnected] = useState(false)
 
   useEffect(() => {
-    const API_URL = 'http://localhost:8000/api/news'
-    axios.get(API_URL)
-      .then((res) => {
-        if (res.data && Array.isArray(res.data)) {
-          setArticles(res.data)
+    setLoading(true)
+    getNews()
+      .then((data) => {
+        if (data && Array.isArray(data) && data.length > 0) {
+          // Normalize keys if needed (read_time -> readTime)
+          const formatted = data.map(item => ({
+            ...item,
+            readTime: item.read_time || item.readTime || '5 menit'
+          }))
+          setArticles(formatted)
+          setIsApiConnected(true)
         }
       })
       .catch((err) => {
-        console.warn('Backend not connected. Using fallback articles.', err.message)
+        console.warn('Backend API connection warning. Using static fallback data.', err)
+      })
+      .finally(() => {
+        setLoading(false)
       })
   }, [])
 
@@ -93,6 +104,11 @@ export default function News() {
           <div className="max-w-xl">
             <div className="inline-flex items-center gap-2 px-3 py-1 rounded-full bg-white/5 border border-white/10 mb-4">
               <span className="font-inter text-xs text-primary font-bold tracking-wider uppercase">Publikasi & Jaringan</span>
+              {isApiConnected && (
+                <span className="inline-flex items-center gap-1.5 px-2 py-0.5 rounded-full bg-emerald-500/10 border border-emerald-500/30 text-[10px] text-emerald-400 font-medium">
+                  <span className="w-1.5 h-1.5 rounded-full bg-emerald-400 animate-pulse"></span> API Connected
+                </span>
+              )}
             </div>
             <h2 className="font-poppins font-black text-4xl md:text-5xl text-white">
               Kabar & <span className="text-primary text-glow">Artikel Terbaru</span>
