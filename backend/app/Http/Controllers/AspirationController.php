@@ -8,7 +8,7 @@ use Illuminate\Http\Request;
 class AspirationController extends Controller
 {
     /**
-     * Display a listing of aspirations.
+     * Display a listing of aspirations (Admin).
      */
     public function index()
     {
@@ -17,7 +17,7 @@ class AspirationController extends Controller
     }
 
     /**
-     * Store a newly created aspiration in storage.
+     * Store a newly created aspiration in storage (Public student form).
      */
     public function store(Request $request)
     {
@@ -41,5 +41,50 @@ class AspirationController extends Controller
             'message' => 'Aspirasi Anda berhasil dikirimkan.',
             'data' => $aspiration
         ], 201);
+    }
+
+    /**
+     * Update the status of an aspiration (Admin).
+     */
+    public function updateStatus(Request $request, $id)
+    {
+        $aspiration = Aspiration::find($id);
+
+        if (!$aspiration) {
+            return response()->json(['message' => 'Aspirasi tidak ditemukan'], 404);
+        }
+
+        $validated = $request->validate([
+            'status' => 'required|string|in:Pending,Selesai,Arsip',
+        ]);
+
+        $aspiration->update([
+            'status' => $validated['status']
+        ]);
+
+        return response()->json([
+            'success' => true,
+            'message' => 'Status aspirasi berhasil diubah.',
+            'data' => $aspiration
+        ], 200);
+    }
+
+    /**
+     * Remove the specified aspiration (Admin).
+     */
+    public function destroy($id)
+    {
+        $aspiration = Aspiration::find($id);
+
+        if (!$aspiration) {
+            return response()->json(['message' => 'Aspirasi tidak ditemukan'], 404);
+        }
+
+        $aspiration->delete();
+
+        return response()->json([
+            'success' => true,
+            'message' => 'Aspirasi berhasil dihapus.'
+        ], 200);
     }
 }

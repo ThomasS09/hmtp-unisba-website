@@ -1,6 +1,6 @@
 import axios from 'axios'
 
-const API_BASE_URL = 'http://localhost:8000/api'
+const API_BASE_URL = import.meta.env.VITE_API_URL || 'http://localhost:8000/api'
 
 const apiClient = axios.create({
   baseURL: API_BASE_URL,
@@ -17,7 +17,7 @@ apiClient.interceptors.request.use((config) => {
   if (token) {
     config.headers.Authorization = `Bearer ${token}`
   }
-  return config;
+  return config
 }, (error) => {
   return Promise.reject(error)
 })
@@ -28,6 +28,7 @@ apiClient.interceptors.response.use(
   (error) => {
     if (error.response && error.response.status === 401) {
       localStorage.removeItem('token')
+      localStorage.removeItem('admin_user')
     }
     return Promise.reject(error)
   }
@@ -39,16 +40,24 @@ export const getNews = async (params = {}) => {
   return response.data
 }
 
+export const getNewsById = async (id) => {
+  const response = await apiClient.get(`/news/${id}`)
+  return response.data
+}
+
 export const submitAspiration = async (formData) => {
   const response = await apiClient.post('/aspirations', formData)
   return response.data
 }
 
-// Auth & Protected Admin Endpoints
+// Auth Endpoints
 export const loginAdmin = async (credentials) => {
   const response = await apiClient.post('/login', credentials)
   if (response.data && response.data.access_token) {
     localStorage.setItem('token', response.data.access_token)
+    if (response.data.user) {
+      localStorage.setItem('admin_user', JSON.stringify(response.data.user))
+    }
   }
   return response.data
 }
@@ -56,8 +65,11 @@ export const loginAdmin = async (credentials) => {
 export const logoutAdmin = async () => {
   try {
     await apiClient.post('/logout')
+  } catch (err) {
+    console.warn('Backend logout error (token revoked locally):', err)
   } finally {
     localStorage.removeItem('token')
+    localStorage.removeItem('admin_user')
   }
 }
 
@@ -66,9 +78,46 @@ export const getAdminProfile = async () => {
   return response.data
 }
 
+// Protected Aspirations Management
 export const getAspirations = async () => {
   const response = await apiClient.get('/aspirations')
   return response.data
+}
+
+export const updateAspirationStatus = async (id, status) => {
+  const response = await apiClient.patch(`/aspirations/${id}/status`, { status })
+  return response.data
+}
+
+export const deleteAspiration = async (id) => {
+  const response = await apiClient.delete(`/aspirations/${id}`)
+  return response.data
+}
+
+// Protected News CRUD
+export const createNews = async (data) => {
+  const response = await apiClient.post('/news', data)
+  return response.data
+}
+
+export const updateNews = async (id, data) => {
+  const response = await apiClient.put(`/news/${id}`, data)
+  return response.data
+}
+
+export const deleteNews = async (id) => {
+  const response = await apiClient.delete(`/news/${id}`)
+  return response.data
+}
+
+// Health Check
+export const checkHealth = async () => {
+  try {
+    const res = await apiClient.get('/news', { params: { limit: 1 } })
+    return { ok: true, data: res.data }
+  } catch (err) {
+    return { ok: false, error: err.message }
+  }
 }
 
 export default apiClient

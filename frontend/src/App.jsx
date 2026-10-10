@@ -1,43 +1,41 @@
-import React, { Suspense } from 'react'
-import Navbar from './components/Navbar'
-import Hero from './components/Hero'
-import Skeleton from './components/Skeleton'
-
-const History = React.lazy(() => import('./components/History'))
-const LogoMeaning = React.lazy(() => import('./components/LogoMeaning'))
-const About = React.lazy(() => import('./components/About'))
-const VisionMission = React.lazy(() => import('./components/VisionMission'))
-const Structure = React.lazy(() => import('./components/Structure'))
-const Programs = React.lazy(() => import('./components/Programs'))
-const News = React.lazy(() => import('./components/News'))
-const AspirationContact = React.lazy(() => import('./components/AspirationContact'))
-const Footer = React.lazy(() => import('./components/Footer'))
-
-const lazySections = [
-  History,
-  LogoMeaning,
-  About,
-  VisionMission,
-  Structure,
-  Programs,
-  News,
-  AspirationContact,
-  Footer,
-]
+import { BrowserRouter, Routes, Route, Navigate } from 'react-router-dom'
+import LandingPage from './pages/LandingPage'
+import AdminLogin from './pages/admin/AdminLogin'
+import AdminDashboard from './pages/admin/AdminDashboard'
+import ProtectedRoute from './components/admin/ProtectedRoute'
 
 function App() {
   return (
-    <div className="bg-black text-white min-h-screen">
-      <Navbar />
-      <Hero />
-      <Suspense fallback={<Skeleton />}>
-        {lazySections.map((Section, i) => (
-          <div key={i} className="performance-contain">
-            <Section />
-          </div>
-        ))}
-      </Suspense>
-    </div>
+    <BrowserRouter>
+      <Routes>
+        {/* Public Landing Page */}
+        <Route path="/" element={<LandingPage />} />
+
+        {/* Admin Authentication */}
+        <Route path="/admin/login" element={<AdminLogin />} />
+
+        {/* Protected Admin Routes */}
+        <Route
+          path="/admin"
+          element={
+            <ProtectedRoute>
+              <AdminDashboard />
+            </ProtectedRoute>
+          }
+        />
+        <Route
+          path="/admin/dashboard"
+          element={
+            <ProtectedRoute>
+              <AdminDashboard />
+            </ProtectedRoute>
+          }
+        />
+
+        {/* Catch-all redirect to Home */}
+        <Route path="*" element={<Navigate to="/" replace />} />
+      </Routes>
+    </BrowserRouter>
   )
 }
 

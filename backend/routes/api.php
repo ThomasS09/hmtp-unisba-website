@@ -25,6 +25,13 @@ Route::middleware('auth:sanctum')->group(function () {
     Route::post('/logout', [AuthController::class, 'logout']);
     Route::get('/me', [AuthController::class, 'me']);
 
-    // Admin Access to Aspirations Data
+    // Admin Aspirations Management
     Route::get('/aspirations', [AspirationController::class, 'index']);
+    Route::patch('/aspirations/{id}/status', [AspirationController::class, 'updateStatus']);
+    Route::delete('/aspirations/{id}', [AspirationController::class, 'destroy']);
+
+    // Admin News CRUD
+    Route::post('/news', [NewsController::class, 'store']);
+    Route::put('/news/{id}', [NewsController::class, 'update']);
+    Route::delete('/news/{id}', [NewsController::class, 'destroy']);
 });
