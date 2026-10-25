@@ -13,13 +13,22 @@ class AdminUserSeeder extends Seeder
      */
     public function run(): void
     {
-        User::updateOrCreate(
-            ['email' => 'admin@hmtpunisba.or.id'],
-            [
-                'name' => 'Admin HMTP UNISBA',
-                'email' => 'admin@hmtpunisba.or.id',
-                'password' => Hash::make('Adhikara2026!'),
-            ]
-        );
+        $user = User::where('email', 'admin@hmtpunisba.or.id')->first();
+
+        if ($user) {
+            // Password tidak pernah ditimpa saat seed ulang; kalau ditimpa,
+            // password yang sudah diganti lewat menu Akun akan balik ke bawaan.
+            return;
+        }
+
+        User::create([
+            'name' => 'Admin HMTP UNISBA',
+            'email' => 'admin@hmtpunisba.or.id',
+            'password' => Hash::make(env('ADMIN_PASSWORD') ?: 'Adhikara2026!'),
+        ]);
+
+        if (! env('ADMIN_PASSWORD')) {
+            $this->command?->warn('Password admin masih bawaan (Adhikara2026!). Ganti lewat menu Akun di dashboard.');
+        }
     }
 }

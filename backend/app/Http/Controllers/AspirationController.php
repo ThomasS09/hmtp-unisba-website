@@ -4,16 +4,49 @@ namespace App\Http\Controllers;
 
 use App\Models\Aspiration;
 use Illuminate\Http\Request;
+use App\Http\Controllers\Traits\Pagination;
+use App\Http\Controllers\Traits\ApiResponse;
 
 class AspirationController extends Controller
 {
-    /**
-     * Display a listing of aspirations (Admin).
-     */
+    use Pagination, ApiResponse;
+    
     public function index()
     {
-        $aspirations = Aspiration::orderBy('created_at', 'desc')->get();
-        return response()->json($aspirations, 200);
+        $params = $this->getPaginationParams();
+        
+        $query = Aspiration::orderBy($params['sort_by'], $params['sort_order']);
+        
+        if (request('category')) {
+            $query->where('category', request('category'));
+        }
+        
+        if (request('status')) {
+            $query->where('status', request('status'));
+        }
+        
+        if (request('search')) {
+            $search = strip_tags(request('search'));
+            $query->where(function ($q) use ($search) {
+                $q->where('name', 'like', "%{$search}%")
+                  ->orWhere('nim', 'like', "%{$search}%")
+                  ->orWhere('message', 'like', "%{$search}%");
+            });
+        }
+        
+        $aspirations = $this->paginate($query, $params['per_page']);
+
+        return $this->successResponse([
+            'data' => $aspirations->items(),
+            'meta' => [
+                'current_page' => $aspirations->currentPage(),
+                'per_page' => $aspirations->perPage(),
+                'total' => $aspirations->total(),
+                'last_page' => $aspirations->lastPage(),
+                'from' => $aspirations->firstItem(),
+                'to' => $aspirations->lastItem(),
+            ]
+        ], 'Aspirasi retrieved successfully.');
     }
 
     /**
@@ -21,26 +54,39 @@ class AspirationController extends Controller
      */
     public function store(Request $request)
     {
+        $isAnonymous = $request->boolean('is_anonymous');
+
         $validated = $request->validate([
-            'name' => 'required|string|max:255',
-            'nim' => 'nullable|string|max:50',
-            'category' => 'required|string|max:100',
-            'message' => 'required|string',
+            'is_anonymous' => 'nullable|boolean',
+            'name' => $isAnonymous ? 'nullable|string|max:255' : 'required|string|max:255|regex:/^[\pL\s\-]+$/u',
+            'nim' => 'nullable|string|max:50|regex:/^[a-zA-Z0-9\-]+$/',
+            'category' => 'required|string|max:100|in:Saran,Kritik,Akademik,Kegiatan,Fasilitas,Organisasi,Lainnya',
+            'message' => 'required|string|min:10|max:5000',
+        ], [
+            'name.required' => 'Nama wajib diisi jika tidak anonim.',
+            'name.regex' => 'Nama hanya boleh berisi huruf, spasi, dan tanda hubung.',
+            'nim.regex' => 'NIM hanya boleh berisi huruf, angka, dan tanda hubung.',
+            'category.required' => 'Kategori wajib dipilih.',
+            'category.in' => 'Kategori tidak valid.',
+            'message.required' => 'Pesan wajib diisi.',
+            'message.min' => 'Pesan minimal 10 karakter.',
+            'message.max' => 'Pesan maksimal 5000 karakter.',
         ]);
+
+        $name = $isAnonymous
+            ? (!empty($validated['name']) ? strip_tags($validated['name']) : 'Anonim')
+            : strip_tags($validated['name']);
 
         $aspiration = Aspiration::create([
-            'name' => $validated['name'],
-            'nim' => $validated['nim'] ?? null,
-            'category' => $validated['category'],
-            'message' => $validated['message'],
+            'name' => $name,
+            'nim' => $isAnonymous ? null : ($validated['nim'] ?? null),
+            'category' => strip_tags($validated['category']),
+            'message' => strip_tags($validated['message']),
             'status' => 'Pending',
+            'is_anonymous' => $isAnonymous,
         ]);
 
-        return response()->json([
-            'success' => true,
-            'message' => 'Aspirasi Anda berhasil dikirimkan.',
-            'data' => $aspiration
-        ], 201);
+        return $this->successResponse($aspiration, 'Aspirasi Anda berhasil dikirimkan.', 201);
     }
 
     /**
@@ -51,7 +97,7 @@ class AspirationController extends Controller
         $aspiration = Aspiration::find($id);
 
         if (!$aspiration) {
-            return response()->json(['message' => 'Aspirasi tidak ditemukan'], 404);
+            return $this->notFoundResponse('Aspirasi tidak ditemukan');
         }
 
         $validated = $request->validate([
@@ -62,11 +108,7 @@ class AspirationController extends Controller
             'status' => $validated['status']
         ]);
 
-        return response()->json([
-            'success' => true,
-            'message' => 'Status aspirasi berhasil diubah.',
-            'data' => $aspiration
-        ], 200);
+        return $this->successResponse($aspiration, 'Status aspirasi berhasil diubah.');
     }
 
     /**
@@ -77,14 +119,11 @@ class AspirationController extends Controller
         $aspiration = Aspiration::find($id);
 
         if (!$aspiration) {
-            return response()->json(['message' => 'Aspirasi tidak ditemukan'], 404);
+            return $this->notFoundResponse('Aspirasi tidak ditemukan');
         }
 
         $aspiration->delete();
 
-        return response()->json([
-            'success' => true,
-            'message' => 'Aspirasi berhasil dihapus.'
-        ], 200);
+        return $this->successResponse(null, 'Aspirasi berhasil dihapus.');
     }
 }

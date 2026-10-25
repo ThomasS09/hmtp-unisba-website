@@ -1,0 +1,25 @@
+# Dependensi & hasil build
+node_modules/
+dist/
+backend/vendor/
+
+# Alat lokal (composer global di mesin ini rusak, jadi phar disimpan lokal)
+backend/composer.phar
+*.phar
+
+# Arsip besar: foto asli pengurus disimpan di luar repo (Documents/hmtp-assets)
+*.zip
+
+# Rahasia & data lokal
+.env
+.env.*
+!.env.example
+!*.env.example
+!frontend/.env.production.example
+backend/.env.example
+frontend/.env.example
+*.sqlite
+backend/database/*.sqlite
+
+# Berkas sementara saat pengujian
+backend/.probe/

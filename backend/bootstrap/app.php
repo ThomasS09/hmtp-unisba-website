@@ -12,8 +12,17 @@ return Application::configure(basePath: dirname(__DIR__))
         health: '/up',
     )
     ->withMiddleware(function (Middleware $middleware) {
-        //
+        $middleware->alias([
+            'rate.limit' => \App\Http\Middleware\RateLimitRequests::class,
+        ]);
+
+        // API murni: tamu tidak pernah diarahkan ke halaman login web
+        $middleware->redirectGuestsTo(fn () => null);
     })
     ->withExceptions(function (Exceptions $exceptions) {
-        //
+        // Semua request /api/* dijawab JSON — tanpa ini tamu dapat 500
+        // "Route [login] not defined", bukan 401.
+        $exceptions->shouldRenderJsonWhen(
+            fn ($request) => $request->is('api/*') || $request->expectsJson()
+        );
     })->create();

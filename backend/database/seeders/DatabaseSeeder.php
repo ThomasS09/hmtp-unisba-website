@@ -16,6 +16,7 @@ class DatabaseSeeder extends Seeder
         $this->call([
             NewsSeeder::class,
             AdminUserSeeder::class,
+            HmtpInitialSeeder::class,
         ]);
     }
 }

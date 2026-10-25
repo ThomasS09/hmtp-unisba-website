@@ -15,5 +15,10 @@ class Aspiration extends Model
         'category',
         'message',
         'status',
+        'is_anonymous',
+    ];
+
+    protected $casts = [
+        'is_anonymous' => 'boolean',
     ];
 }

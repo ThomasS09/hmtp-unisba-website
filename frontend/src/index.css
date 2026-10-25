@@ -74,8 +74,3 @@ h1, h2, h3, h4, h5, h6 {
   border: 1px solid rgba(255, 212, 0, 0.15);
 }
 
-/* Premium performance containment for below-the-fold elements */
-.performance-contain {
-  content-visibility: auto;
-  contain-intrinsic-size: 800px;
-}

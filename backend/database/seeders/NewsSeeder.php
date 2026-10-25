@@ -55,8 +55,9 @@ class NewsSeeder extends Seeder
             ],
         ];
 
+        // updateOrCreate: seeder harus idempoten, dijalankan 2x tidak boleh menduplikasi berita
         foreach ($articles as $article) {
-            News::create($article);
+            News::updateOrCreate(['title' => $article['title']], $article);
         }
     }
 }
