@@ -25,6 +25,7 @@ class AdminUserSeeder extends Seeder
             'name' => 'Admin HMTP UNISBA',
             'email' => 'admin@hmtpunisba.or.id',
             'password' => Hash::make(env('ADMIN_PASSWORD') ?: 'Adhikara2026!'),
+            'is_admin' => true,
         ]);
 
         if (! env('ADMIN_PASSWORD')) {

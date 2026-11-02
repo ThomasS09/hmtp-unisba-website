@@ -40,9 +40,17 @@ const BIDANG_META: Record<string, { icon: string; tugas: string }> = {
     icon: '⛏️',
     tugas: 'Wadah strategis dalam meningkatkan kapasitas keilmuan akademik serta keahlian teknis pertambangan.',
   },
+  // Sekretaris & Bendahara Umum bukan "bidang", tapi punya proker/aker sendiri
+  // (Monthly Coordination Forum, Budget & Treasury Coordination, dst).
+  'sekretaris-umum': {
+    icon: '🗂️',
+    tugas: 'Mengelola administrasi, kesekretariatan, dan koordinasi rutin kepengurusan himpunan.',
+  },
+  'bendahara-umum': {
+    icon: '💳',
+    tugas: 'Mengelola anggaran, pembukuan, dan pertanggungjawaban keuangan himpunan.',
+  },
 }
-
-const BUKAN_BIDANG = ['sekretaris-umum', 'bendahara-umum']
 
 const meta = (slug: string) => BIDANG_META[slug.replace(/^bidang-/, '')] ?? { icon: '📌', tugas: '' }
 
@@ -79,7 +87,9 @@ export default function Structure() {
   const members = data?.members ?? []
   const pengurusInti = members.filter((m) => m.kelompok === 'Pengurus Inti')
   const ketuaBidang = members.filter((m) => m.kelompok === 'Ketua Bidang')
-  const departments = (data?.departments ?? []).filter((d) => !BUKAN_BIDANG.includes(d.slug))
+  // Semua departemen ditampilkan, termasuk Sekretaris Umum & Bendahara Umum,
+  // supaya seluruh proker di database bisa dilihat pengunjung.
+  const departments = data?.departments ?? []
   const programs = data?.programs ?? []
 
   return (
@@ -130,7 +140,7 @@ export default function Structure() {
         <div>
           <h3 className="font-poppins font-bold text-2xl text-white text-center mb-4">Bidang & Divisi Kerja</h3>
           <p className="font-inter text-sm text-gray-400 text-center mb-10">
-            Klik pada kartu bidang untuk melihat program kerja dan detail fungsinya.
+            Klik atau tekan Enter pada kartu untuk melihat program kerja dan detail fungsinya.
           </p>
 
           <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
@@ -138,47 +148,75 @@ export default function Structure() {
               const info = meta(bidang.slug)
               const items = programs.filter((p) => p.department_slug === bidang.slug)
 
+              const terbuka = activeBidang === bidang.slug
+              const idPanel = `bidang-panel-${bidang.slug}`
+
               return (
                 <div
                   key={bidang.id}
-                  onClick={() => setActiveBidang(activeBidang === bidang.slug ? null : bidang.slug)}
-                  className={`glass-panel rounded-2xl p-6 cursor-pointer transform hover:-translate-y-1 transition-all duration-300 ${
-                    activeBidang === bidang.slug
+                  className={`glass-panel rounded-2xl transform hover:-translate-y-1 transition-all duration-300 ${
+                    terbuka
                       ? 'border-primary/40 ring-1 ring-primary/20 shadow-[0_0_25px_rgba(255,212,0,0.05)] bg-white/[0.03]'
                       : 'hover:border-primary/30'
                   }`}
                 >
-                  <div className="flex items-center gap-4 mb-4">
-                    <span className="text-3xl">{info.icon}</span>
-                    <h4 className="font-poppins font-bold text-lg text-white leading-tight">{bidang.name}</h4>
-                  </div>
+                  {/* Tombol: bisa di-Tab dan dibuka dengan Enter/Space */}
+                  <button
+                    type="button"
+                    onClick={() => setActiveBidang(terbuka ? null : bidang.slug)}
+                    aria-expanded={terbuka}
+                    aria-controls={idPanel}
+                    className="w-full text-left p-6 cursor-pointer focus:outline-none focus-visible:ring-2 focus-visible:ring-primary rounded-2xl"
+                  >
+                    <div className="flex items-center gap-4 mb-4">
+                      <span aria-hidden="true" className="text-3xl">{info.icon}</span>
+                      <h4 className="font-poppins font-bold text-lg text-white leading-tight">{bidang.name}</h4>
+                    </div>
 
-                  <p className="font-inter text-xs text-gray-400 leading-relaxed mb-4">
-                    {info.tugas}
-                  </p>
+                    <p className="font-inter text-xs text-gray-400 leading-relaxed mb-4">
+                      {info.tugas}
+                    </p>
 
-                  {/* Collapsible Area */}
-                  <div className={`transition-all duration-300 overflow-hidden ${
-                    activeBidang === bidang.slug ? 'max-h-[400px] opacity-100 mt-4' : 'max-h-0 opacity-0'
-                  }`}>
+                    <div className="flex items-center justify-between gap-3 mt-2">
+                      <span className="text-[10px] text-gray-500 font-inter">
+                        {items.length} program & aktivitas
+                      </span>
+                      <span className="text-[10px] font-semibold text-primary font-inter uppercase tracking-wider">
+                        {terbuka ? 'Tutup Detail' : 'Lihat Detail'}
+                      </span>
+                    </div>
+                  </button>
+
+                  {/* Daftar proker: ikut hilang dari tab order saat tertutup */}
+                  <div
+                    id={idPanel}
+                    inert={!terbuka}
+                    aria-hidden={!terbuka}
+                    className={`transition-all duration-300 overflow-hidden ${
+                      terbuka ? 'max-h-[600px] opacity-100 px-6 pb-6' : 'max-h-0 opacity-0'
+                    }`}
+                  >
                     <div className="border-t border-white/10 pt-4">
-                      <span className="font-poppins font-bold text-xs text-primary uppercase tracking-wider block mb-2">Program & Aktivitas:</span>
+                      <span className="font-poppins font-bold text-xs text-primary uppercase tracking-wider block mb-2">
+                        Program &amp; Aktivitas:
+                      </span>
                       <ul className="space-y-1.5">
                         {items.map((prog) => (
-                          <li key={prog.id} className="flex items-center gap-2 font-inter text-xs text-gray-300">
-                            <span className="w-1.5 h-1.5 rounded-full bg-primary flex-shrink-0"></span>
-                            {prog.name}
+                          <li key={prog.id} className="flex items-start gap-2 font-inter text-xs text-gray-300">
+                            <span aria-hidden="true" className="mt-1.5 w-1.5 h-1.5 rounded-full bg-primary flex-shrink-0"></span>
+                            <span>
+                              {prog.name}
+                              {prog.status && prog.status !== 'Rencana' && (
+                                <span className="ml-2 text-[10px] text-primary/80">({prog.status})</span>
+                              )}
+                            </span>
                           </li>
                         ))}
+                        {items.length === 0 && (
+                          <li className="font-inter text-xs text-gray-500">Belum ada proker untuk unit ini.</li>
+                        )}
                       </ul>
                     </div>
-                  </div>
-
-                  {/* Toggle Hint */}
-                  <div className="flex justify-end mt-2">
-                    <span className="text-[10px] font-semibold text-primary font-inter uppercase tracking-wider">
-                      {activeBidang === bidang.slug ? 'Tutup Detail' : 'Lihat Detail'}
-                    </span>
                   </div>
                 </div>
               )

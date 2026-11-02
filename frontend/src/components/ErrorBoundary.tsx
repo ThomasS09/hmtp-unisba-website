@@ -1,4 +1,4 @@
-import { Component, ReactNode, ErrorInfo } from 'react'
+import { Component, ReactNode } from 'react'
 
 interface Props {
   children: ReactNode
@@ -22,8 +22,8 @@ export default class ErrorBoundary extends Component<Props, State> {
     return { hasError: true, error }
   }
 
-  componentDidCatch(error: Error, errorInfo: ErrorInfo): void {
-    console.error(`[ErrorBoundary - ${this.props.sectionName || 'Root'}]`, error, errorInfo)
+  componentDidCatch(_error: Error, _errorInfo: React.ErrorInfo) {
+    // error logged by browser console automatically
   }
 
   handleReset = () => {

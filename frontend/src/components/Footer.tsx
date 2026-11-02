@@ -121,12 +121,12 @@ export default function Footer() {
 
         {/* Sub-footer (Copyright) */}
         <div className="border-t border-white/10 pt-8 flex flex-col md:flex-row items-center justify-between gap-4 text-xs font-inter text-gray-500">
-          <p>© {new Date().getFullYear()} HMTP UNISBA. All Rights Reserved.</p>
+          <p>© {2026} HMTP UNISBA. All Rights Reserved.</p>
           <div className="flex gap-6 items-center">
-            <a href="#" className="hover:text-white transition-colors">Privacy Policy</a>
-            <a href="#" className="hover:text-white transition-colors">Terms of Service</a>
+            <a href="/kebijakan-privasi" className="hover:text-white transition-colors">Kebijakan Privasi</a>
+            <a href="mailto:hmtp.adhikarakarsa@gmail.com" className="hover:text-white transition-colors">Hubungi Kami</a>
             <a href="/admin/login" className="text-gray-400 hover:text-primary transition-colors flex items-center gap-1 font-semibold">
-              <span>🔐</span> Portal Admin
+              <span aria-hidden="true">🔐</span> Portal Admin
             </a>
           </div>
         </div>

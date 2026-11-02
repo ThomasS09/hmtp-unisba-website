@@ -1,4 +1,4 @@
-import { useState, useEffect, useRef } from 'react'
+import { useState, useEffect, useRef, useCallback } from 'react'
 import {
   getPrograms,
   createProgram,
@@ -38,7 +38,7 @@ export default function ProgramsTab({ showToast }: Props) {
     schedule: '',
   })
 
-  const loadData = async () => {
+  const loadData = useCallback(async () => {
     setLoading(true)
     try {
       const [pList, dList, cList] = await Promise.all([
@@ -56,11 +56,11 @@ export default function ProgramsTab({ showToast }: Props) {
     } finally {
       setLoading(false)
     }
-  }
+  }, [showToast])
 
   useEffect(() => {
     loadData()
-  }, [])
+  }, [loadData])
 
   const resetForm = () => {
     setEditingId(null)
@@ -154,6 +154,7 @@ export default function ProgramsTab({ showToast }: Props) {
         </div>
         <div className="flex flex-wrap gap-2 text-xs">
           <select
+            aria-label="Saring berdasarkan jenis"
             value={filterType}
             onChange={(e) => setFilterType(e.target.value)}
             className="px-3 py-1.5 bg-black/60 border border-white/10 rounded-xl text-white text-xs focus:outline-none"
@@ -166,6 +167,7 @@ export default function ProgramsTab({ showToast }: Props) {
             ))}
           </select>
           <select
+            aria-label="Saring berdasarkan bidang"
             value={filterDept}
             onChange={(e) => setFilterDept(e.target.value)}
             className="px-3 py-1.5 bg-black/60 border border-white/10 rounded-xl text-white text-xs focus:outline-none"
@@ -187,8 +189,9 @@ export default function ProgramsTab({ showToast }: Props) {
 
         <div className="grid grid-cols-1 sm:grid-cols-3 gap-3">
           <div className="sm:col-span-2 space-y-1.5">
-            <label className="text-xs font-semibold text-gray-300 uppercase">Nama Program / Agenda</label>
+            <label className="text-xs font-semibold text-gray-300 uppercase" htmlFor="field-programstab-1">Nama Program / Agenda</label>
             <input
+              id="field-programstab-1"
               type="text"
               required
               value={formData.name}
@@ -199,8 +202,9 @@ export default function ProgramsTab({ showToast }: Props) {
           </div>
 
           <div className="space-y-1.5">
-            <label className="text-xs font-semibold text-gray-300 uppercase">Bidang</label>
+            <label className="text-xs font-semibold text-gray-300 uppercase" htmlFor="field-programstab-2">Bidang</label>
             <select
+              id="field-programstab-2"
               required
               value={formData.department_id}
               onChange={(e) => setFormData({ ...formData, department_id: e.target.value })}
@@ -218,8 +222,9 @@ export default function ProgramsTab({ showToast }: Props) {
 
         <div className="grid grid-cols-1 sm:grid-cols-3 gap-3">
           <div className="space-y-1.5">
-            <label className="text-xs font-semibold text-gray-300 uppercase">Jenis</label>
+            <label className="text-xs font-semibold text-gray-300 uppercase" htmlFor="field-programstab-3">Jenis</label>
             <select
+              id="field-programstab-3"
               value={formData.type}
               onChange={(e) =>
                 setFormData({ ...formData, type: e.target.value as (typeof TYPE_OPTIONS)[number] })
@@ -235,8 +240,9 @@ export default function ProgramsTab({ showToast }: Props) {
           </div>
 
           <div className="space-y-1.5">
-            <label className="text-xs font-semibold text-gray-300 uppercase">Status</label>
+            <label className="text-xs font-semibold text-gray-300 uppercase" htmlFor="field-programstab-4">Status</label>
             <select
+              id="field-programstab-4"
               value={formData.status}
               onChange={(e) =>
                 setFormData({ ...formData, status: e.target.value as (typeof STATUS_OPTIONS)[number] })
@@ -252,8 +258,9 @@ export default function ProgramsTab({ showToast }: Props) {
           </div>
 
           <div className="space-y-1.5">
-            <label className="text-xs font-semibold text-gray-300 uppercase">Jadwal / Waktu</label>
+            <label className="text-xs font-semibold text-gray-300 uppercase" htmlFor="field-programstab-5">Jadwal / Waktu</label>
             <input
+              id="field-programstab-5"
               type="text"
               value={formData.schedule}
               onChange={(e) => setFormData({ ...formData, schedule: e.target.value })}
@@ -264,8 +271,9 @@ export default function ProgramsTab({ showToast }: Props) {
         </div>
 
         <div className="space-y-1.5">
-          <label className="text-xs font-semibold text-gray-300 uppercase">Deskripsi</label>
+          <label className="text-xs font-semibold text-gray-300 uppercase" htmlFor="field-programstab-6">Deskripsi</label>
           <textarea
+            id="field-programstab-6"
             rows={3}
             value={formData.description}
             onChange={(e) => setFormData({ ...formData, description: e.target.value })}
@@ -275,8 +283,9 @@ export default function ProgramsTab({ showToast }: Props) {
         </div>
 
         <div className="space-y-1.5">
-          <label className="text-xs font-semibold text-gray-300 uppercase">Lampiran Gambar (Opsional)</label>
+          <label className="text-xs font-semibold text-gray-300 uppercase" htmlFor="field-programstab-7">Lampiran Gambar (Opsional)</label>
           <input
+            id="field-programstab-7"
             ref={fileInputRef}
             type="file"
             accept="image/*"

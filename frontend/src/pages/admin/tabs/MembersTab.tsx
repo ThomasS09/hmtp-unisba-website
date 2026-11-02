@@ -1,4 +1,4 @@
-import { useState, useEffect, useRef } from 'react'
+import { useState, useEffect, useRef, useCallback } from 'react'
 import {
   getMembers,
   createMember,
@@ -35,7 +35,7 @@ export default function MembersTab({ showToast }: Props) {
     sort_order: 0,
   })
 
-  const loadData = async () => {
+  const loadData = useCallback(async () => {
     setLoading(true)
     try {
       const [mList, dList, cList] = await Promise.all([
@@ -53,11 +53,11 @@ export default function MembersTab({ showToast }: Props) {
     } finally {
       setLoading(false)
     }
-  }
+  }, [showToast])
 
   useEffect(() => {
     loadData()
-  }, [])
+  }, [loadData])
 
   const resetForm = () => {
     setEditingId(null)
@@ -177,8 +177,9 @@ export default function MembersTab({ showToast }: Props) {
 
         <div className="grid grid-cols-1 sm:grid-cols-3 gap-4">
           <div className="space-y-1.5">
-            <label className="text-xs font-semibold text-gray-300 uppercase">Kelompok</label>
+            <label className="text-xs font-semibold text-gray-300 uppercase" htmlFor="field-memberstab-1">Kelompok</label>
             <select
+              id="field-memberstab-1"
               value={formData.kelompok}
               onChange={(e) =>
                 setFormData({
@@ -194,8 +195,9 @@ export default function MembersTab({ showToast }: Props) {
           </div>
 
           <div className="space-y-1.5">
-            <label className="text-xs font-semibold text-gray-300 uppercase">Bidang (Opsional)</label>
+            <label className="text-xs font-semibold text-gray-300 uppercase" htmlFor="field-memberstab-2">Bidang (Opsional)</label>
             <select
+              id="field-memberstab-2"
               value={formData.department_id}
               onChange={(e) => setFormData({ ...formData, department_id: e.target.value })}
               className="w-full px-4 py-2.5 bg-black/60 border border-white/10 rounded-xl text-white text-xs sm:text-sm focus:border-primary/50 focus:outline-none"
@@ -210,8 +212,9 @@ export default function MembersTab({ showToast }: Props) {
           </div>
 
           <div className="space-y-1.5">
-            <label className="text-xs font-semibold text-gray-300 uppercase">Jabatan</label>
+            <label className="text-xs font-semibold text-gray-300 uppercase" htmlFor="field-memberstab-3">Jabatan</label>
             <input
+              id="field-memberstab-3"
               type="text"
               required
               value={formData.position}
@@ -224,8 +227,9 @@ export default function MembersTab({ showToast }: Props) {
 
         <div className="grid grid-cols-1 sm:grid-cols-3 gap-4">
           <div className="space-y-1.5">
-            <label className="text-xs font-semibold text-gray-300 uppercase">Nama Lengkap</label>
+            <label className="text-xs font-semibold text-gray-300 uppercase" htmlFor="field-memberstab-4">Nama Lengkap</label>
             <input
+              id="field-memberstab-4"
               type="text"
               required
               value={formData.name}
@@ -236,11 +240,12 @@ export default function MembersTab({ showToast }: Props) {
           </div>
 
           <div className="space-y-1.5">
-            <label className="text-xs font-semibold text-gray-300 uppercase flex items-center gap-1.5">
+            <label className="text-xs font-semibold text-gray-300 uppercase flex items-center gap-1.5" htmlFor="field-memberstab-5">
               <span>NPM</span>
               <span className="text-[10px] text-amber-400 font-normal lowercase">(hanya di dashboard)</span>
             </label>
             <input
+              id="field-memberstab-5"
               type="text"
               value={formData.npm}
               onChange={(e) => setFormData({ ...formData, npm: e.target.value })}
@@ -250,8 +255,9 @@ export default function MembersTab({ showToast }: Props) {
           </div>
 
           <div className="space-y-1.5">
-            <label className="text-xs font-semibold text-gray-300 uppercase">Urutan Tampil</label>
+            <label className="text-xs font-semibold text-gray-300 uppercase" htmlFor="field-memberstab-6">Urutan Tampil</label>
             <input
+              id="field-memberstab-6"
               type="number"
               value={formData.sort_order}
               onChange={(e) => setFormData({ ...formData, sort_order: Number(e.target.value) })}
@@ -274,8 +280,9 @@ export default function MembersTab({ showToast }: Props) {
             </div>
           )}
           <div className="space-y-1">
-            <label className="text-xs font-semibold text-gray-300 uppercase block">Unggah Foto Pengurus</label>
+            <label className="text-xs font-semibold text-gray-300 uppercase block" htmlFor="field-memberstab-7">Unggah Foto Pengurus</label>
             <input
+              id="field-memberstab-7"
               ref={fileInputRef}
               type="file"
               accept="image/*"

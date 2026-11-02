@@ -1,20 +1,27 @@
 import { useState, useEffect, useRef } from 'react'
-import { getNews } from '../services/api'
+import { useSiteData } from '../hooks/useSiteData'
 import type { NewsArticle } from '../types'
 
-const categories = ['Semua', 'Kegiatan', 'Prestasi', 'Akademik', 'Sosial']
+// Harus sama dengan News::CATEGORIES di backend, kalau tidak
+// kategori yang dipilih pengurus ditolak 422.
+const KATEGORI_BERITA = ['Kegiatan', 'Prestasi', 'Akademik', 'Sosial', 'Pengumuman', 'Organisasi', 'Lainnya']
+const categories = ['Semua', ...KATEGORI_BERITA]
 
 const categoryIcons: Record<string, string> = {
   Kegiatan: '💼',
   Prestasi: '🏆',
   Akademik: '📖',
   Sosial: '🤝',
+  Pengumuman: '📢',
+  Organisasi: '🏛️',
+  Lainnya: '📰',
 }
 
 // ponytail: isi artikel ikut di respons daftar (4 berita ≈ 2,8 KB), jadi detail
 // dibuka dari state tanpa request tambahan. Kalau nanti isi artikel jadi panjang,
 // keluarkan `content` dari index dan muat lewat GET /api/news/{id}.
 export default function News() {
+  const { data: site, loading: isLoading } = useSiteData()
   const [articles, setArticles] = useState<NewsArticle[]>([])
   const [loading, setLoading] = useState(true)
   const [selectedCategory, setSelectedCategory] = useState('Semua')
@@ -24,21 +31,11 @@ export default function News() {
   const tutupRef = useRef<HTMLButtonElement | null>(null)
 
   useEffect(() => {
-    let alive = true
-    getNews()
-      .then((data) => {
-        if (alive) setArticles(Array.isArray(data) ? data : [])
-      })
-      .catch(() => {
-        if (alive) setArticles([])
-      })
-      .finally(() => {
-        if (alive) setLoading(false)
-      })
-    return () => {
-      alive = false
+    if (site?.news) {
+      setArticles(Array.isArray(site.news) ? site.news : [])
     }
-  }, [])
+    setLoading(isLoading)
+  }, [site?.news, isLoading])
 
   const tutup = () => {
     setSelected(null)

@@ -6,6 +6,9 @@ import ProtectedRoute from './components/admin/ProtectedRoute'
 import ErrorBoundary from './components/ErrorBoundary'
 import Skeleton from './components/Skeleton'
 
+// Halaman statis ringan: ikut diunduh hanya saat dibuka.
+const KebijakanPrivasi = lazy(() => import('./pages/KebijakanPrivasi'))
+
 // Dashboard admin dimuat terpisah: pengunjung publik tidak perlu mengunduh
 // seluruh kode CRUD (~200 KB) hanya untuk membaca halaman depan.
 const AdminDashboard = lazy(() => import('./pages/admin/AdminDashboard'))
@@ -17,6 +20,16 @@ function App() {
         <Routes>
           {/* Public Landing Page */}
           <Route path="/" element={<LandingPage />} />
+
+          {/* Halaman statis */}
+          <Route
+            path="/kebijakan-privasi"
+            element={
+              <Suspense fallback={<Skeleton />}>
+                <KebijakanPrivasi />
+              </Suspense>
+            }
+          />
 
           {/* Admin Authentication */}
           <Route path="/admin/login" element={<AdminLogin />} />

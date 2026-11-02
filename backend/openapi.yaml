@@ -1,49 +1,345 @@
-copenapi: 3.0.3
+openapi: 3.0.3
+
 info:
   title: HMTP UNISBA API
-  description: API documentation for the HMTP UNISBA Website backend.
-  version: 1.0.0
+  description: |
+    REST API website HMTP UNISBA (Laravel 12 + Sanctum).
+
+    - Endpoint publik boleh diakses tanpa token.
+    - Endpoint bertanda 🔒 memerlukan header `Authorization: Bearer <token>` dari `POST /login`.
+    - Semua respons memakai bentuk yang sama: `{ success, message, data }`; galat validasi menambah `errors`.
+    - Daftar per halaman dibatasi maksimal 100 baris (`per_page` > 100 ditolak 422).
+  version: 1.1.0
+
 servers:
   - url: http://localhost:8000/api
-    description: Local Development Server
+    description: Pengembangan lokal
+  - url: https://api.hmtpunisba.or.id/api
+    description: Produksi (sesuaikan saat deploy)
+
+tags:
+  - name: Publik
+  - name: Auth
+  - name: Aspirasi
+  - name: Berita
+  - name: Kabinet
+  - name: Bidang
+  - name: Pengurus
+  - name: Proker
+  - name: Profil
+  - name: Kontak
+
 paths:
-  /news:
+  /site:
     get:
-      summary: Get paginated news list
-      parameters:
-        - name: page
-          in: query
-          schema:
-            type: integer
-        - name: limit
-          in: query
-          schema:
-            type: integer
+      tags: [Publik]
+      summary: Semua data halaman publik dalam satu permintaan
+      description: Profil (visi/misi), kabinet aktif, daftar kabinet (arsip), bidang, pengurus kabinet aktif, proker kabinet aktif, dan kontak.
       responses:
         '200':
-          description: A paginated list of news articles
-  /aspirations:
-    post:
-      summary: Submit a new aspiration
-      requestBody:
-        required: true
-        content:
-          application/json:
-            schema:
-              type: object
-              properties:
-                name:
-                  type: string
-                email:
-                  type: string
-                message:
-                  type: string
-      responses:
-        '201':
-          description: Aspiration submitted successfully
+          description: Data situs
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  success: { type: boolean, example: true }
+                  message: { type: string }
+                  data:
+                    type: object
+                    properties:
+                      profile:
+                        type: object
+                        properties:
+                          visi: { type: array, items: { type: string } }
+                          misi: { type: array, items: { type: string } }
+                      cabinet:
+                        allOf: [{ $ref: '#/components/schemas/Kabinet' }]
+                        nullable: true
+                      cabinets:
+                        type: array
+                        items: { $ref: '#/components/schemas/Kabinet' }
+                      departments:
+                        type: array
+                        items: { $ref: '#/components/schemas/Bidang' }
+                      members:
+                        type: array
+                        items: { $ref: '#/components/schemas/PengurusPublik' }
+                      programs:
+                        type: array
+                        items: { $ref: '#/components/schemas/Proker' }
+                      contact:
+                        allOf: [{ $ref: '#/components/schemas/Kontak' }]
+                        nullable: true
+
   /login:
     post:
-      summary: Admin login
+      tags: [Auth]
+      summary: Login admin, mengembalikan token Bearer
+      description: Dibatasi 5 percobaan per menit per IP.
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              required: [email, password]
+              properties:
+                email: { type: string, format: email, example: admin@hmtpunisba.or.id }
+                password: { type: string, minLength: 6, example: "rahasia123" }
+      responses:
+        '200':
+          description: Berhasil
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  success: { type: boolean }
+                  message: { type: string }
+                  access_token: { type: string }
+                  token_type: { type: string, example: Bearer }
+                  user: { $ref: '#/components/schemas/User' }
+        '422':
+          description: Kredensial salah atau isian tidak valid
+          content:
+            application/json:
+              schema: { $ref: '#/components/schemas/GalatValidasi' }
+        '429': { description: Terlalu banyak percobaan }
+
+  /logout:
+    post:
+      tags: [Auth]
+      summary: 🔒 Cabut token yang sedang dipakai
+      security: [{ bearerAuth: [] }]
+      responses:
+        '200': { description: Token dicabut }
+        '401': { $ref: '#/components/responses/TidakTerautentikasi' }
+
+  /me:
+    get:
+      tags: [Auth]
+      summary: 🔒 Data admin yang sedang login
+      security: [{ bearerAuth: [] }]
+      responses:
+        '200':
+          description: Data pengguna
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  success: { type: boolean }
+                  user: { $ref: '#/components/schemas/User' }
+        '401': { $ref: '#/components/responses/TidakTerautentikasi' }
+
+  /password:
+    post:
+      tags: [Auth]
+      summary: 🔒 Ganti password admin
+      description: Password lama wajib benar. Token lain dicabut setelah password berubah.
+      security: [{ bearerAuth: [] }]
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              required: [current_password, password, password_confirmation]
+              properties:
+                current_password: { type: string }
+                password: { type: string, minLength: 8 }
+                password_confirmation: { type: string }
+      responses:
+        '200': { description: Password diganti }
+        '422':
+          description: Password lama salah atau konfirmasi tidak sama
+          content:
+            application/json:
+              schema: { $ref: '#/components/schemas/GalatValidasi' }
+        '401': { $ref: '#/components/responses/TidakTerautentikasi' }
+
+  /aspirations:
+    post:
+      tags: [Aspirasi]
+      summary: Kirim aspirasi (publik)
+      description: Dibatasi 20 permintaan per menit. Bila `is_anonymous` true, `name` dan `nim` tidak disimpan.
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              required: [category, message]
+              properties:
+                name: { type: string, maxLength: 255, description: "Wajib bila tidak anonim" }
+                nim: { type: string, maxLength: 50 }
+                category:
+                  type: string
+                  enum: [Saran, Kritik, Akademik, Kegiatan, Fasilitas, Organisasi, Lainnya]
+                message: { type: string, minLength: 10, maxLength: 5000 }
+                is_anonymous: { type: boolean, default: false }
+      responses:
+        '201': { description: Aspirasi tersimpan }
+        '422':
+          description: Isian tidak valid
+          content:
+            application/json:
+              schema: { $ref: '#/components/schemas/GalatValidasi' }
+        '429': { description: Terlalu banyak permintaan }
+    get:
+      tags: [Aspirasi]
+      summary: 🔒 Daftar aspirasi (berhalaman)
+      security: [{ bearerAuth: [] }]
+      parameters:
+        - $ref: '#/components/parameters/PerPage'
+        - $ref: '#/components/parameters/Page'
+        - name: status
+          in: query
+          schema: { type: string, enum: [Pending, Selesai, Arsip] }
+        - name: category
+          in: query
+          schema: { type: string }
+        - name: search
+          in: query
+          description: Cari pada nama, NIM, dan isi pesan
+          schema: { type: string }
+      responses:
+        '200':
+          description: Daftar aspirasi
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  success: { type: boolean }
+                  message: { type: string }
+                  data:
+                    type: object
+                    properties:
+                      data:
+                        type: array
+                        items: { $ref: '#/components/schemas/Aspirasi' }
+                      meta: { $ref: '#/components/schemas/Meta' }
+        '401': { $ref: '#/components/responses/TidakTerautentikasi' }
+
+  /aspirations/{id}/status:
+    patch:
+      tags: [Aspirasi]
+      summary: 🔒 Ubah status aspirasi
+      security: [{ bearerAuth: [] }]
+      parameters:
+        - $ref: '#/components/parameters/Id'
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              required: [status]
+              properties:
+                status: { type: string, enum: [Pending, Selesai, Arsip] }
+      responses:
+        '200': { description: Status diperbarui }
+        '401': { $ref: '#/components/responses/TidakTerautentikasi' }
+        '404': { $ref: '#/components/responses/TidakDitemukan' }
+
+  /aspirations/{id}:
+    delete:
+      tags: [Aspirasi]
+      summary: 🔒 Hapus aspirasi
+      security: [{ bearerAuth: [] }]
+      parameters:
+        - $ref: '#/components/parameters/Id'
+      responses:
+        '200': { description: Terhapus }
+        '401': { $ref: '#/components/responses/TidakTerautentikasi' }
+        '404': { $ref: '#/components/responses/TidakDitemukan' }
+
+  /news:
+    get:
+      tags: [Berita]
+      summary: Daftar berita (berhalaman)
+      description: Isi lengkap (`content`) ikut di respons, jadi halaman publik tidak perlu permintaan kedua.
+      parameters:
+        - $ref: '#/components/parameters/PerPage'
+        - $ref: '#/components/parameters/Page'
+        - name: category
+          in: query
+          schema: { type: string, enum: [Kegiatan, Prestasi, Akademik, Sosial] }
+        - name: search
+          in: query
+          schema: { type: string }
+      responses:
+        '200':
+          description: Daftar berita
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  success: { type: boolean }
+                  message: { type: string }
+                  data:
+                    type: object
+                    properties:
+                      data:
+                        type: array
+                        items: { $ref: '#/components/schemas/Berita' }
+                      meta: { $ref: '#/components/schemas/Meta' }
+        '422': { description: per_page di luar batas }
+    post:
+      tags: [Berita]
+      summary: 🔒 Terbitkan berita
+      security: [{ bearerAuth: [] }]
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              required: [title, category, author, excerpt, content]
+              properties:
+                title: { type: string, maxLength: 255 }
+                category: { type: string, enum: [Kegiatan, Prestasi, Akademik, Sosial] }
+                author: { type: string, maxLength: 255 }
+                excerpt: { type: string, maxLength: 500 }
+                content: { type: string }
+                date: { type: string, example: "15 Juli 2026" }
+                read_time: { type: string, example: "5 menit" }
+      responses:
+        '201': { description: Berita dibuat }
+        '422':
+          description: Isian tidak valid
+          content:
+            application/json:
+              schema: { $ref: '#/components/schemas/GalatValidasi' }
+        '401': { $ref: '#/components/responses/TidakTerautentikasi' }
+
+  /news/{id}:
+    get:
+      tags: [Berita]
+      summary: Detail satu berita
+      parameters:
+        - $ref: '#/components/parameters/Id'
+      responses:
+        '200':
+          description: Detail berita
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  success: { type: boolean }
+                  message: { type: string }
+                  data: { $ref: '#/components/schemas/Berita' }
+        '404': { $ref: '#/components/responses/TidakDitemukan' }
+    put:
+      tags: [Berita]
+      summary: 🔒 Ubah berita
+      security: [{ bearerAuth: [] }]
+      parameters:
+        - $ref: '#/components/parameters/Id'
       requestBody:
         required: true
         content:
@@ -51,10 +347,681 @@ paths:
             schema:
               type: object
               properties:
-                email:
-                  type: string
-                password:
-                  type: string
+                title: { type: string }
+                category: { type: string }
+                author: { type: string }
+                excerpt: { type: string }
+                content: { type: string }
+      responses:
+        '200': { description: Berita diperbarui }
+        '401': { $ref: '#/components/responses/TidakTerautentikasi' }
+        '404': { $ref: '#/components/responses/TidakDitemukan' }
+    delete:
+      tags: [Berita]
+      summary: 🔒 Hapus berita
+      security: [{ bearerAuth: [] }]
+      parameters:
+        - $ref: '#/components/parameters/Id'
+      responses:
+        '200': { description: Terhapus }
+        '401': { $ref: '#/components/responses/TidakTerautentikasi' }
+        '404': { $ref: '#/components/responses/TidakDitemukan' }
+
+  /cabinets:
+    get:
+      tags: [Kabinet]
+      summary: 🔒 Daftar kabinet (aktif + arsip) beserta jumlah pengurus
+      security: [{ bearerAuth: [] }]
       responses:
         '200':
-          description: Authentication successful, returns bearer token
+          description: Daftar kabinet
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  success: { type: boolean }
+                  message: { type: string }
+                  data:
+                    type: array
+                    items: { $ref: '#/components/schemas/Kabinet' }
+        '401': { $ref: '#/components/responses/TidakTerautentikasi' }
+    post:
+      tags: [Kabinet]
+      summary: 🔒 Tambah kabinet (periode baru)
+      security: [{ bearerAuth: [] }]
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              required: [name, period]
+              properties:
+                name: { type: string, example: Adhikara Karsa }
+                period: { type: string, pattern: '^\d{4}/\d{4}$', example: 2026/2027 }
+                name_meaning: { type: string, maxLength: 5000 }
+                is_active: { type: boolean, default: false }
+      responses:
+        '201': { description: Kabinet dibuat }
+        '422':
+          description: Isian tidak valid
+          content:
+            application/json:
+              schema: { $ref: '#/components/schemas/GalatValidasi' }
+        '401': { $ref: '#/components/responses/TidakTerautentikasi' }
+
+  /cabinets/{id}:
+    put:
+      tags: [Kabinet]
+      summary: 🔒 Ubah kabinet
+      security: [{ bearerAuth: [] }]
+      parameters:
+        - $ref: '#/components/parameters/Id'
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              required: [name, period]
+              properties:
+                name: { type: string }
+                period: { type: string }
+                name_meaning: { type: string }
+                is_active: { type: boolean }
+      responses:
+        '200': { description: Kabinet diperbarui }
+        '401': { $ref: '#/components/responses/TidakTerautentikasi' }
+        '404': { $ref: '#/components/responses/TidakDitemukan' }
+    delete:
+      tags: [Kabinet]
+      summary: 🔒 Hapus kabinet arsip
+      description: Kabinet aktif tidak bisa dihapus (422). Aktifkan kabinet lain dulu.
+      security: [{ bearerAuth: [] }]
+      parameters:
+        - $ref: '#/components/parameters/Id'
+      responses:
+        '200': { description: Terhapus }
+        '422': { description: Kabinet aktif tidak boleh dihapus }
+        '401': { $ref: '#/components/responses/TidakTerautentikasi' }
+        '404': { $ref: '#/components/responses/TidakDitemukan' }
+
+  /cabinets/{id}/activate:
+    post:
+      tags: [Kabinet]
+      summary: 🔒 Jadikan kabinet ini yang tampil di halaman publik
+      description: Kabinet lain otomatis dinonaktifkan, jadi hanya satu yang aktif.
+      security: [{ bearerAuth: [] }]
+      parameters:
+        - $ref: '#/components/parameters/Id'
+      responses:
+        '200': { description: Kabinet diaktifkan }
+        '401': { $ref: '#/components/responses/TidakTerautentikasi' }
+        '404': { $ref: '#/components/responses/TidakDitemukan' }
+
+  /departments:
+    get:
+      tags: [Bidang]
+      summary: 🔒 Daftar bidang
+      security: [{ bearerAuth: [] }]
+      responses:
+        '200':
+          description: Daftar bidang
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  success: { type: boolean }
+                  message: { type: string }
+                  data:
+                    type: array
+                    items: { $ref: '#/components/schemas/Bidang' }
+        '401': { $ref: '#/components/responses/TidakTerautentikasi' }
+    post:
+      tags: [Bidang]
+      summary: 🔒 Tambah bidang
+      security: [{ bearerAuth: [] }]
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              required: [name, slug]
+              properties:
+                name: { type: string, maxLength: 255, example: Bidang Medkominfo }
+                slug: { type: string, maxLength: 255, example: bidang-medkominfo }
+                sort_order: { type: integer, minimum: 0 }
+      responses:
+        '201': { description: Bidang dibuat }
+        '422':
+          description: Nama/slug sudah dipakai atau isian tidak valid
+          content:
+            application/json:
+              schema: { $ref: '#/components/schemas/GalatValidasi' }
+        '401': { $ref: '#/components/responses/TidakTerautentikasi' }
+
+  /departments/{id}:
+    put:
+      tags: [Bidang]
+      summary: 🔒 Ubah bidang
+      security: [{ bearerAuth: [] }]
+      parameters:
+        - $ref: '#/components/parameters/Id'
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              required: [name, slug]
+              properties:
+                name: { type: string }
+                slug: { type: string }
+                sort_order: { type: integer }
+      responses:
+        '200': { description: Bidang diperbarui }
+        '401': { $ref: '#/components/responses/TidakTerautentikasi' }
+        '404': { $ref: '#/components/responses/TidakDitemukan' }
+    delete:
+      tags: [Bidang]
+      summary: 🔒 Hapus bidang
+      security: [{ bearerAuth: [] }]
+      parameters:
+        - $ref: '#/components/parameters/Id'
+      responses:
+        '200': { description: Terhapus }
+        '401': { $ref: '#/components/responses/TidakTerautentikasi' }
+        '404': { $ref: '#/components/responses/TidakDitemukan' }
+
+  /members:
+    get:
+      tags: [Pengurus]
+      summary: 🔒 Daftar pengurus (relasi bidang diratakan jadi teks)
+      security: [{ bearerAuth: [] }]
+      parameters:
+        - name: cabinet_id
+          in: query
+          schema: { type: integer }
+        - name: kelompok
+          in: query
+          schema: { type: string, enum: [Pengurus Inti, Ketua Bidang] }
+      responses:
+        '200':
+          description: Daftar pengurus
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  success: { type: boolean }
+                  message: { type: string }
+                  data:
+                    type: array
+                    items: { $ref: '#/components/schemas/Pengurus' }
+        '401': { $ref: '#/components/responses/TidakTerautentikasi' }
+    post:
+      tags: [Pengurus]
+      summary: 🔒 Tambah pengurus (multipart bila ada foto)
+      security: [{ bearerAuth: [] }]
+      requestBody:
+        required: true
+        content:
+          multipart/form-data:
+            schema:
+              type: object
+              required: [cabinet_id, kelompok, position, name]
+              properties:
+                cabinet_id: { type: integer }
+                department_id: { type: integer, nullable: true, description: "Wajib untuk Ketua Bidang" }
+                kelompok: { type: string, enum: [Pengurus Inti, Ketua Bidang] }
+                position: { type: string, example: Ketua Himpunan }
+                name: { type: string, example: Farrel Danandyaka Hidayat }
+                npm: { type: string, maxLength: 50, example: "10070123029" }
+                sort_order: { type: integer }
+                photo: { type: string, format: binary, description: "JPG/PNG, maksimal 4 MB" }
+      responses:
+        '201': { description: Pengurus dibuat }
+        '422':
+          description: Isian tidak valid
+          content:
+            application/json:
+              schema: { $ref: '#/components/schemas/GalatValidasi' }
+        '401': { $ref: '#/components/responses/TidakTerautentikasi' }
+
+  /members/{id}:
+    post:
+      tags: [Pengurus]
+      summary: 🔒 Ubah pengurus
+      description: Memakai POST (bukan PUT) karena PHP tidak membaca berkas dari body PUT multipart.
+      security: [{ bearerAuth: [] }]
+      parameters:
+        - $ref: '#/components/parameters/Id'
+      requestBody:
+        required: true
+        content:
+          multipart/form-data:
+            schema:
+              type: object
+              properties:
+                cabinet_id: { type: integer }
+                department_id: { type: integer, nullable: true }
+                kelompok: { type: string, enum: [Pengurus Inti, Ketua Bidang] }
+                position: { type: string }
+                name: { type: string }
+                npm: { type: string }
+                sort_order: { type: integer }
+                photo: { type: string, format: binary }
+      responses:
+        '200': { description: Pengurus diperbarui }
+        '401': { $ref: '#/components/responses/TidakTerautentikasi' }
+        '404': { $ref: '#/components/responses/TidakDitemukan' }
+    delete:
+      tags: [Pengurus]
+      summary: 🔒 Hapus pengurus
+      security: [{ bearerAuth: [] }]
+      parameters:
+        - $ref: '#/components/parameters/Id'
+      responses:
+        '200': { description: Terhapus }
+        '401': { $ref: '#/components/responses/TidakTerautentikasi' }
+        '404': { $ref: '#/components/responses/TidakDitemukan' }
+
+  /programs:
+    get:
+      tags: [Proker]
+      summary: Daftar proker & aktivitas kerja
+      parameters:
+        - name: cabinet_id
+          in: query
+          schema: { type: integer }
+        - name: department_id
+          in: query
+          schema: { type: integer }
+        - name: type
+          in: query
+          schema: { type: string, enum: [Program Kerja, Aktivitas Kerja] }
+        - name: status
+          in: query
+          schema: { type: string, enum: [Rencana, Berjalan, Selesai] }
+        - name: search
+          in: query
+          schema: { type: string }
+      responses:
+        '200':
+          description: Daftar proker
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  success: { type: boolean }
+                  message: { type: string }
+                  data:
+                    type: array
+                    items: { $ref: '#/components/schemas/Proker' }
+    post:
+      tags: [Proker]
+      summary: 🔒 Tambah proker/aktivitas kerja
+      security: [{ bearerAuth: [] }]
+      requestBody:
+        required: true
+        content:
+          multipart/form-data:
+            schema:
+              type: object
+              required: [cabinet_id, department_id, name, type]
+              properties:
+                cabinet_id: { type: integer }
+                department_id: { type: integer }
+                name: { type: string }
+                type: { type: string, enum: [Program Kerja, Aktivitas Kerja] }
+                status: { type: string, enum: [Rencana, Berjalan, Selesai], default: Rencana }
+                description: { type: string }
+                schedule: { type: string, example: Maret 2027 }
+                image: { type: string, format: binary }
+      responses:
+        '201': { description: Proker dibuat }
+        '422':
+          description: Isian tidak valid
+          content:
+            application/json:
+              schema: { $ref: '#/components/schemas/GalatValidasi' }
+        '401': { $ref: '#/components/responses/TidakTerautentikasi' }
+
+  /programs/{id}:
+    post:
+      tags: [Proker]
+      summary: 🔒 Ubah proker/aktivitas kerja
+      description: Memakai POST karena alasan multipart yang sama dengan pengurus.
+      security: [{ bearerAuth: [] }]
+      parameters:
+        - $ref: '#/components/parameters/Id'
+      requestBody:
+        required: true
+        content:
+          multipart/form-data:
+            schema:
+              type: object
+              properties:
+                cabinet_id: { type: integer }
+                department_id: { type: integer }
+                name: { type: string }
+                type: { type: string, enum: [Program Kerja, Aktivitas Kerja] }
+                status: { type: string, enum: [Rencana, Berjalan, Selesai] }
+                description: { type: string }
+                schedule: { type: string }
+                image: { type: string, format: binary }
+      responses:
+        '200': { description: Proker diperbarui }
+        '401': { $ref: '#/components/responses/TidakTerautentikasi' }
+        '404': { $ref: '#/components/responses/TidakDitemukan' }
+    delete:
+      tags: [Proker]
+      summary: 🔒 Hapus proker/aktivitas kerja
+      security: [{ bearerAuth: [] }]
+      parameters:
+        - $ref: '#/components/parameters/Id'
+      responses:
+        '200': { description: Terhapus }
+        '401': { $ref: '#/components/responses/TidakTerautentikasi' }
+        '404': { $ref: '#/components/responses/TidakDitemukan' }
+
+  /profile-items:
+    get:
+      tags: [Profil]
+      summary: 🔒 Daftar butir visi & misi
+      security: [{ bearerAuth: [] }]
+      parameters:
+        - name: type
+          in: query
+          schema: { type: string, enum: [visi, misi] }
+      responses:
+        '200':
+          description: Daftar butir
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  success: { type: boolean }
+                  message: { type: string }
+                  data:
+                    type: array
+                    items: { $ref: '#/components/schemas/ButirProfil' }
+        '401': { $ref: '#/components/responses/TidakTerautentikasi' }
+    post:
+      tags: [Profil]
+      summary: 🔒 Tambah butir visi/misi
+      security: [{ bearerAuth: [] }]
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              required: [type, body]
+              properties:
+                type: { type: string, enum: [visi, misi] }
+                body: { type: string, minLength: 5, maxLength: 2000 }
+                sort_order: { type: integer, minimum: 0 }
+      responses:
+        '201': { description: Butir dibuat }
+        '422':
+          description: Isian tidak valid
+          content:
+            application/json:
+              schema: { $ref: '#/components/schemas/GalatValidasi' }
+        '401': { $ref: '#/components/responses/TidakTerautentikasi' }
+
+  /profile-items/{id}:
+    put:
+      tags: [Profil]
+      summary: 🔒 Ubah butir visi/misi
+      security: [{ bearerAuth: [] }]
+      parameters:
+        - $ref: '#/components/parameters/Id'
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              required: [type, body]
+              properties:
+                type: { type: string, enum: [visi, misi] }
+                body: { type: string }
+                sort_order: { type: integer }
+      responses:
+        '200': { description: Butir diperbarui }
+        '401': { $ref: '#/components/responses/TidakTerautentikasi' }
+        '404': { $ref: '#/components/responses/TidakDitemukan' }
+    delete:
+      tags: [Profil]
+      summary: 🔒 Hapus butir visi/misi
+      security: [{ bearerAuth: [] }]
+      parameters:
+        - $ref: '#/components/parameters/Id'
+      responses:
+        '200': { description: Terhapus }
+        '401': { $ref: '#/components/responses/TidakTerautentikasi' }
+        '404': { $ref: '#/components/responses/TidakDitemukan' }
+
+  /contact:
+    get:
+      tags: [Kontak]
+      summary: 🔒 Kontak resmi
+      security: [{ bearerAuth: [] }]
+      responses:
+        '200':
+          description: Data kontak
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  success: { type: boolean }
+                  message: { type: string }
+                  data: { $ref: '#/components/schemas/Kontak' }
+        '401': { $ref: '#/components/responses/TidakTerautentikasi' }
+    put:
+      tags: [Kontak]
+      summary: 🔒 Ubah kontak resmi
+      security: [{ bearerAuth: [] }]
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              required: [email]
+              properties:
+                website: { type: string, nullable: true, example: HMTPUNISBA.com }
+                email: { type: string, format: email, example: hmtp.adhikarakarsa@gmail.com }
+                instagram: { type: string, nullable: true, example: "@hmtpunisba" }
+                tiktok: { type: string, nullable: true, example: "@hmtp.unisba" }
+                youtube: { type: string, nullable: true, example: HMTP UNISBA }
+      responses:
+        '200': { description: Kontak diperbarui }
+        '422':
+          description: Email tidak valid atau kosong
+          content:
+            application/json:
+              schema: { $ref: '#/components/schemas/GalatValidasi' }
+        '401': { $ref: '#/components/responses/TidakTerautentikasi' }
+
+components:
+  securitySchemes:
+    bearerAuth:
+      type: http
+      scheme: bearer
+      bearerFormat: Sanctum
+
+  parameters:
+    Id:
+      name: id
+      in: path
+      required: true
+      schema: { type: integer }
+    Page:
+      name: page
+      in: query
+      schema: { type: integer, minimum: 1, default: 1 }
+    PerPage:
+      name: per_page
+      in: query
+      description: Maksimal 100; nilai lebih besar ditolak 422
+      schema: { type: integer, minimum: 1, maximum: 100, default: 10 }
+
+  responses:
+    TidakTerautentikasi:
+      description: Token tidak ada atau kedaluwarsa (selalu JSON)
+      content:
+        application/json:
+          schema:
+            type: object
+            properties:
+              message: { type: string, example: Unauthenticated. }
+    TidakDitemukan:
+      description: Data tidak ditemukan
+      content:
+        application/json:
+          schema:
+            type: object
+            properties:
+              success: { type: boolean, example: false }
+              message: { type: string, example: Program tidak ditemukan }
+
+  schemas:
+    Meta:
+      type: object
+      properties:
+        current_page: { type: integer }
+        per_page: { type: integer }
+        total: { type: integer }
+        last_page: { type: integer }
+        from: { type: integer, nullable: true }
+        to: { type: integer, nullable: true }
+
+    GalatValidasi:
+      type: object
+      properties:
+        message: { type: string, example: Nama pengurus wajib diisi. }
+        errors:
+          type: object
+          additionalProperties:
+            type: array
+            items: { type: string }
+
+    User:
+      type: object
+      properties:
+        id: { type: integer }
+        name: { type: string }
+        email: { type: string, format: email }
+        role: { type: string, example: admin }
+
+    Kabinet:
+      type: object
+      properties:
+        id: { type: integer }
+        name: { type: string, example: Adhikara Karsa }
+        period: { type: string, example: 2026/2027 }
+        name_meaning: { type: string, nullable: true }
+        logo_url: { type: string, nullable: true }
+        is_active: { type: boolean }
+        members_count: { type: integer }
+
+    Bidang:
+      type: object
+      properties:
+        id: { type: integer }
+        name: { type: string, example: Bidang Medkominfo }
+        slug: { type: string, example: bidang-medkominfo }
+
+    Pengurus:
+      type: object
+      properties:
+        id: { type: integer }
+        cabinet_id: { type: integer }
+        department_id: { type: integer, nullable: true }
+        kelompok: { type: string, enum: [Pengurus Inti, Ketua Bidang] }
+        position: { type: string, example: Ketua Himpunan }
+        name: { type: string }
+        npm: { type: string, nullable: true }
+        photo_url: { type: string, nullable: true }
+        sort_order: { type: integer }
+        department: { type: string, nullable: true, description: "Nama bidang (diratakan)" }
+        department_slug: { type: string, nullable: true }
+
+    PengurusPublik:
+      type: object
+      properties:
+        id: { type: integer }
+        kelompok: { type: string }
+        position: { type: string }
+        name: { type: string }
+        department: { type: string, nullable: true }
+        department_slug: { type: string, nullable: true }
+        photo_url: { type: string, nullable: true }
+
+    Proker:
+      type: object
+      properties:
+        id: { type: integer }
+        cabinet_id: { type: integer }
+        department_id: { type: integer }
+        name: { type: string, example: Booklet HMTP }
+        type: { type: string, enum: [Program Kerja, Aktivitas Kerja] }
+        description: { type: string, nullable: true }
+        schedule: { type: string, nullable: true }
+        status: { type: string, enum: [Rencana, Berjalan, Selesai] }
+        image_url: { type: string, nullable: true }
+        department: { type: string, nullable: true }
+        department_slug: { type: string, nullable: true }
+
+    Berita:
+      type: object
+      properties:
+        id: { type: integer }
+        title: { type: string }
+        category: { type: string, enum: [Kegiatan, Prestasi, Akademik, Sosial] }
+        date: { type: string, example: "15 Juli 2026" }
+        excerpt: { type: string }
+        content: { type: string }
+        author: { type: string }
+        read_time: { type: string, nullable: true }
+        gradient: { type: string, nullable: true }
+        created_at: { type: string, format: date-time }
+
+    Aspirasi:
+      type: object
+      properties:
+        id: { type: integer }
+        name: { type: string, example: Anonim }
+        nim: { type: string, nullable: true }
+        category: { type: string, enum: [Saran, Kritik, Akademik, Kegiatan, Fasilitas, Organisasi, Lainnya] }
+        message: { type: string }
+        status: { type: string, enum: [Pending, Selesai, Arsip] }
+        is_anonymous: { type: boolean }
+        created_at: { type: string, format: date-time }
+
+    ButirProfil:
+      type: object
+      properties:
+        id: { type: integer }
+        type: { type: string, enum: [visi, misi] }
+        body: { type: string }
+        sort_order: { type: integer }
+
+    Kontak:
+      type: object
+      properties:
+        id: { type: integer }
+        website: { type: string, nullable: true }
+        email: { type: string, format: email }
+        instagram: { type: string, nullable: true }
+        tiktok: { type: string, nullable: true }
+        youtube: { type: string, nullable: true }

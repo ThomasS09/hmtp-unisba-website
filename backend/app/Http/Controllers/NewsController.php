@@ -75,7 +75,7 @@ class NewsController extends Controller
     {
         $validated = $request->validate([
             'title' => 'required|string|max:255|min:3',
-            'category' => 'required|string|max:100|in:Akademik,Organisasi,Kegiatan,Pengumuman,Prestasi,Lainnya',
+            'category' => 'required|string|max:100|in:' . implode(',', News::CATEGORIES),
             'author' => 'nullable|string|max:100|regex:/^[\pL\s\-\.]+$/u',
             'excerpt' => 'required|string|min:10|max:500',
             'content' => 'required|string|min:50|max:50000',
@@ -124,7 +124,7 @@ class NewsController extends Controller
 
         $validated = $request->validate([
             'title' => 'sometimes|required|string|max:255|min:3',
-            'category' => 'sometimes|required|string|max:100|in:Akademik,Organisasi,Kegiatan,Pengumuman,Prestasi,Lainnya',
+            'category' => 'sometimes|required|string|max:100|in:' . implode(',', News::CATEGORIES),
             'author' => 'nullable|string|max:100|regex:/^[\pL\s\-\.]+$/u',
             'excerpt' => 'sometimes|required|string|min:10|max:500',
             'content' => 'sometimes|required|string|min:50|max:50000',

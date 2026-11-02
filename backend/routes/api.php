@@ -34,7 +34,7 @@ Route::get('/programs', [ProgramController::class, 'index'])->middleware('thrott
 Route::post('/aspirations', [AspirationController::class, 'store'])->middleware('throttle:20,1');
 
 // Protected Admin Routes (Sanctum) - Standard rate limit (60 requests per minute)
-Route::middleware('auth:sanctum')->group(function () {
+Route::middleware(['auth:sanctum', 'admin'])->group(function () {
     Route::post('/logout', [AuthController::class, 'logout'])->middleware('throttle:60,1');
     Route::get('/me', [AuthController::class, 'me'])->middleware('throttle:60,1');
     Route::post('/password', [AuthController::class, 'updatePassword'])->middleware('throttle:10,1');

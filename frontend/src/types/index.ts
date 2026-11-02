@@ -120,6 +120,7 @@ export interface SiteData {
   departments: Department[]
   members: Member[]
   programs: Program[]
+  news?: NewsArticle[]
   contact: Contact | null
 }
 

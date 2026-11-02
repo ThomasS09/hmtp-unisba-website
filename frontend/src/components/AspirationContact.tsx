@@ -1,6 +1,7 @@
 import { useState, type FormEvent } from 'react'
 import { submitAspiration, pesanError } from '../services/api'
-import type { AspirationInput } from '../types'
+import { useSiteData } from '../hooks/useSiteData'
+import type { AspirationInput, Contact } from '../types'
 
 // Static data defined outside component — avoids re-declaration on every render
 const initialFormData: AspirationInput = {
@@ -19,38 +20,83 @@ interface SocialChannel {
   color: string
 }
 
-const socialChannels: SocialChannel[] = [
-  {
-    name: 'Instagram',
-    handle: '@hmtpunisba',
-    url: 'https://instagram.com/hmtpunisba',
-    icon: '📸',
-    color: 'hover:border-pink-500/40 hover:shadow-[0_0_30px_rgba(236,72,153,0.15)] hover:text-pink-400',
-  },
-  {
-    name: 'TikTok',
-    handle: '@hmtp.unisba',
-    url: 'https://tiktok.com/@hmtp.unisba',
-    icon: '🎵',
-    color: 'hover:border-cyan-500/40 hover:shadow-[0_0_30px_rgba(6,182,212,0.15)] hover:text-cyan-400',
-  },
-  {
-    name: 'Gmail',
-    handle: 'Hmtp.adhikarakarsa@gmail.com',
-    url: 'mailto:Hmtp.adhikarakarsa@gmail.com',
-    icon: '✉️',
-    color: 'hover:border-red-500/40 hover:shadow-[0_0_30px_rgba(239,68,68,0.15)] hover:text-red-400',
-  },
-  {
-    name: 'WhatsApp Humas',
-    handle: '+62 812-1414-1983',
-    url: 'https://wa.me/6281214141983',
-    icon: '📞',
-    color: 'hover:border-emerald-500/40 hover:shadow-[0_0_30px_rgba(16,185,129,0.15)] hover:text-emerald-400',
-  },
+// Kategori harus sama dengan aturan backend (AspirationController::store),
+// kalau tidak pengunjung bisa memilih opsi yang ditolak 422.
+const KATEGORI = [
+  { value: 'Saran', label: 'Saran Pembangunan' },
+  { value: 'Kritik', label: 'Kritik Kinerja' },
+  { value: 'Akademik', label: 'Aspirasi Kurikulum & Dosen' },
+  { value: 'Kegiatan', label: 'Usulan Program / Event' },
+  { value: 'Fasilitas', label: 'Sarana & Prasarana' },
+  { value: 'Organisasi', label: 'Organisasi & Kepengurusan' },
+  { value: 'Lainnya', label: 'Lainnya' },
 ]
 
+// Akun dari /api/site (tab Kontak). Nomor WhatsApp belum punya kolom di tabel
+// contact, jadi masih tetap di sini sampai pengurus memintanya dikelola.
+const WHATSAPP = { handle: '+62 812-1414-1983', url: 'https://wa.me/6281214141983' }
+
+const akunMedsos = (contact: Contact | null | undefined): SocialChannel[] => {
+  const url = (nilai: string, dasar: string) =>
+    nilai.startsWith('http') ? nilai : `${dasar}${nilai.replace(/^@/, '')}`
+  const nama = (nilai: string) => (nilai.startsWith('@') ? nilai : `@${nilai.replace(/^@/, '')}`)
+
+  const daftar: SocialChannel[] = []
+
+  if (contact?.instagram) {
+    daftar.push({
+      name: 'Instagram',
+      handle: nama(contact.instagram),
+      url: url(contact.instagram, 'https://instagram.com/'),
+      icon: '📸',
+      color: 'hover:border-pink-500/40 hover:shadow-[0_0_30px_rgba(236,72,153,0.15)] hover:text-pink-400',
+    })
+  }
+
+  if (contact?.tiktok) {
+    daftar.push({
+      name: 'TikTok',
+      handle: nama(contact.tiktok),
+      url: url(contact.tiktok, 'https://tiktok.com/@'),
+      icon: '🎵',
+      color: 'hover:border-cyan-500/40 hover:shadow-[0_0_30px_rgba(6,182,212,0.15)] hover:text-cyan-400',
+    })
+  }
+
+  if (contact?.youtube) {
+    daftar.push({
+      name: 'YouTube',
+      handle: contact.youtube.replace(/^@/, ''),
+      url: url(contact.youtube, 'https://youtube.com/@'),
+      icon: '▶️',
+      color: 'hover:border-red-500/40 hover:shadow-[0_0_30px_rgba(239,68,68,0.15)] hover:text-red-400',
+    })
+  }
+
+  if (contact?.email) {
+    daftar.push({
+      name: 'Gmail',
+      handle: contact.email,
+      url: `mailto:${contact.email}`,
+      icon: '✉️',
+      color: 'hover:border-red-500/40 hover:shadow-[0_0_30px_rgba(239,68,68,0.15)] hover:text-red-400',
+    })
+  }
+
+  daftar.push({
+    name: 'WhatsApp Humas',
+    handle: WHATSAPP.handle,
+    url: WHATSAPP.url,
+    icon: '📞',
+    color: 'hover:border-emerald-500/40 hover:shadow-[0_0_30px_rgba(16,185,129,0.15)] hover:text-emerald-400',
+  })
+
+  return daftar
+}
+
 export default function AspirationContact() {
+  const { data } = useSiteData()
+  const socialChannels = akunMedsos(data?.contact)
   const [formData, setFormData] = useState<AspirationInput>(initialFormData)
   const [submitted, setSubmitted] = useState(false)
   const [submitting, setSubmitting] = useState(false)
@@ -69,7 +115,6 @@ export default function AspirationContact() {
         setSubmitted(false)
       }, 5000)
     } catch (err: unknown) {
-      console.error('Submit aspiration error:', err)
       setErrorMessage(pesanError(err, 'Gagal mengirim aspirasi ke server. Silakan coba lagi.'))
     } finally {
       setSubmitting(false)
@@ -164,10 +209,11 @@ export default function AspirationContact() {
                       onChange={(e) => setFormData({ ...formData, category: e.target.value })}
                       className="w-full px-4 py-3 bg-white/5 border border-white/10 focus:border-primary/40 focus:ring-1 focus:ring-primary/25 rounded-xl font-inter text-xs sm:text-sm text-gray-300 outline-none transition-all duration-300 [&>option]:bg-black [&>option]:text-white cursor-pointer"
                     >
-                      <option value="Saran">Saran Pembangunan</option>
-                      <option value="Kritik">Kritik Kinerja</option>
-                      <option value="Akademik">Aspirasi Kurikulum & Dosen</option>
-                      <option value="Kegiatan">Usulan Program / Event</option>
+                      {KATEGORI.map((k) => (
+                        <option key={k.value} value={k.value}>
+                          {k.label}
+                        </option>
+                      ))}
                     </select>
                   </div>
 

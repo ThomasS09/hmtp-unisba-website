@@ -6,6 +6,7 @@ use Tests\TestCase;
 use App\Models\User;
 use App\Models\Aspiration;
 use Illuminate\Foundation\Testing\RefreshDatabase;
+use Laravel\Sanctum\Sanctum;
 
 class AspirationControllerTest extends TestCase
 {
@@ -66,11 +67,11 @@ class AspirationControllerTest extends TestCase
     /** @test */
     public function admin_can_view_all_aspirations()
     {
-        $user = User::factory()->create();
+        $user = User::factory()->create(['is_admin' => true]);
+        Sanctum::actingAs($user);
         Aspiration::factory()->count(3)->create();
 
-        $response = $this->actingAs($user, 'sanctum')
-            ->getJson('/api/aspirations');
+        $response = $this->getJson('/api/aspirations');
 
         $response->assertStatus(200)
             ->assertJsonCount(3);
@@ -79,13 +80,13 @@ class AspirationControllerTest extends TestCase
     /** @test */
     public function admin_can_update_aspiration_status()
     {
-        $user = User::factory()->create();
+        $user = User::factory()->create(['is_admin' => true]);
+        Sanctum::actingAs($user);
         $aspiration = Aspiration::factory()->create(['status' => 'Pending']);
 
-        $response = $this->actingAs($user, 'sanctum')
-            ->patchJson("/api/aspirations/{$aspiration->id}/status", [
-                'status' => 'Selesai',
-            ]);
+        $response = $this->patchJson("/api/aspirations/{$aspiration->id}/status", [
+            'status' => 'Selesai',
+        ]);
 
         $response->assertStatus(200)
             ->assertJson(['success' => true]);
@@ -99,11 +100,11 @@ class AspirationControllerTest extends TestCase
     /** @test */
     public function admin_can_delete_aspiration()
     {
-        $user = User::factory()->create();
+        $user = User::factory()->create(['is_admin' => true]);
+        Sanctum::actingAs($user);
         $aspiration = Aspiration::factory()->create();
 
-        $response = $this->actingAs($user, 'sanctum')
-            ->deleteJson("/api/aspirations/{$aspiration->id}");
+        $response = $this->deleteJson("/api/aspirations/{$aspiration->id}");
 
         $response->assertStatus(200)
             ->assertJson(['success' => true]);

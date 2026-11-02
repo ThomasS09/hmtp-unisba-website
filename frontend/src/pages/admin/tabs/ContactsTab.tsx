@@ -1,4 +1,4 @@
-import { useState, useEffect } from 'react'
+import { useState, useEffect, useCallback } from 'react'
 import { getContact, updateContact, pesanError } from '../../../services/api'
 import TableSkeleton from '../../../components/admin/TableSkeleton'
 import type { Contact } from '../../../types'
@@ -26,7 +26,7 @@ export default function ContactsTab({ showToast }: Props) {
     youtube: '',
   })
 
-  const loadData = async () => {
+  const loadData = useCallback(async () => {
     setLoading(true)
     try {
       const data = await getContact()
@@ -45,11 +45,11 @@ export default function ContactsTab({ showToast }: Props) {
     } finally {
       setLoading(false)
     }
-  }
+  }, [showToast])
 
   useEffect(() => {
     loadData()
-  }, [])
+  }, [loadData])
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault()
@@ -82,8 +82,9 @@ export default function ContactsTab({ showToast }: Props) {
           <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
             {FIELDS.map((f) => (
               <div key={f.key} className="space-y-1.5">
-                <label className="text-xs font-semibold uppercase text-gray-300">{f.label}</label>
+                <label className="text-xs font-semibold uppercase text-gray-300" htmlFor={`kontak-${f.key}`}>{f.label}</label>
                 <input
+                  id={`kontak-${f.key}`}
                   type={f.type || 'text'}
                   required={f.key === 'email'}
                   value={formData[f.key as keyof typeof formData]}

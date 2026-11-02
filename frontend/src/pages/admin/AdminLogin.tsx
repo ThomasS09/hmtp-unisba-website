@@ -164,7 +164,7 @@ export default function AdminLogin() {
 
         {/* Footer info */}
         <p className="text-center font-inter text-[11px] text-gray-500 mt-6">
-          &copy; {new Date().getFullYear()} HMTP UNISBA &bull; Adhikara Karsa Cabinet
+          &copy; {2026} HMTP UNISBA &bull; Adhikara Karsa Cabinet
         </p>
       </div>
     </div>

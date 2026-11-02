@@ -121,7 +121,8 @@ export const logoutAdmin = async (): Promise<void> => {
   try {
     await apiClient.post('/logout')
   } catch (err) {
-    console.warn('Backend logout error (token revoked locally):', err)
+    localStorage.removeItem('token')
+    localStorage.removeItem('admin_user')
   } finally {
     localStorage.removeItem('token')
     localStorage.removeItem('admin_user')
@@ -161,9 +162,15 @@ export const deleteAspiration = async (id: number | string): Promise<ApiResponse
   return response.data
 }
 
+// Invalidate site data cache after admin CRUD
+const invalidateSiteDataCache = () => {
+  window.dispatchEvent(new Event('siteDataInvalidate'))
+}
+
 // Protected News CRUD
 export const createNews = async (data: Partial<NewsArticle>): Promise<ApiResponse<NewsArticle>> => {
   const response = await apiClient.post<ApiResponse<NewsArticle>>('/news', data)
+  invalidateSiteDataCache()
   return response.data
 }
 
@@ -172,11 +179,13 @@ export const updateNews = async (
   data: Partial<NewsArticle>
 ): Promise<ApiResponse<NewsArticle>> => {
   const response = await apiClient.put<ApiResponse<NewsArticle>>(`/news/${id}`, data)
+  invalidateSiteDataCache()
   return response.data
 }
 
 export const deleteNews = async (id: number | string): Promise<ApiResponse<void>> => {
   const response = await apiClient.delete<ApiResponse<void>>(`/news/${id}`)
+  invalidateSiteDataCache()
   return response.data
 }
 
@@ -207,6 +216,7 @@ export const createProfileItem = async (
   data: Partial<ProfileItem>
 ): Promise<ApiResponse<ProfileItem>> => {
   const response = await apiClient.post<ApiResponse<ProfileItem>>('/profile-items', data)
+  invalidateSiteDataCache()
   return response.data
 }
 
@@ -215,11 +225,13 @@ export const updateProfileItem = async (
   data: Partial<ProfileItem>
 ): Promise<ApiResponse<ProfileItem>> => {
   const response = await apiClient.put<ApiResponse<ProfileItem>>(`/profile-items/${id}`, data)
+  invalidateSiteDataCache()
   return response.data
 }
 
 export const deleteProfileItem = async (id: number): Promise<ApiResponse<void>> => {
   const response = await apiClient.delete<ApiResponse<void>>(`/profile-items/${id}`)
+  invalidateSiteDataCache()
   return response.data
 }
 
@@ -247,6 +259,7 @@ export const createCabinet = async (
   logo?: File | null
 ): Promise<ApiResponse<Cabinet>> => {
   const response = await apiClient.post<ApiResponse<Cabinet>>('/cabinets', cabinetForm(data, logo))
+  invalidateSiteDataCache()
   return response.data
 }
 
@@ -259,16 +272,19 @@ export const updateCabinet = async (
   const form = cabinetForm(data, logo)
   form.append('_method', 'PUT')
   const response = await apiClient.post<ApiResponse<Cabinet>>(`/cabinets/${id}`, form)
+  invalidateSiteDataCache()
   return response.data
 }
 
 export const activateCabinet = async (id: number): Promise<ApiResponse<Cabinet>> => {
   const response = await apiClient.post<ApiResponse<Cabinet>>(`/cabinets/${id}/activate`)
+  invalidateSiteDataCache()
   return response.data
 }
 
 export const deleteCabinet = async (id: number): Promise<ApiResponse<void>> => {
   const response = await apiClient.delete<ApiResponse<void>>(`/cabinets/${id}`)
+  invalidateSiteDataCache()
   return response.data
 }
 
@@ -282,6 +298,7 @@ export const createDepartment = async (
   data: Partial<Department>
 ): Promise<ApiResponse<Department>> => {
   const response = await apiClient.post<ApiResponse<Department>>('/departments', data)
+  invalidateSiteDataCache()
   return response.data
 }
 
@@ -290,11 +307,13 @@ export const updateDepartment = async (
   data: Partial<Department>
 ): Promise<ApiResponse<Department>> => {
   const response = await apiClient.put<ApiResponse<Department>>(`/departments/${id}`, data)
+  invalidateSiteDataCache()
   return response.data
 }
 
 export const deleteDepartment = async (id: number): Promise<ApiResponse<void>> => {
   const response = await apiClient.delete<ApiResponse<void>>(`/departments/${id}`)
+  invalidateSiteDataCache()
   return response.data
 }
 
@@ -318,6 +337,7 @@ export const createMember = async (
   photo?: File | null
 ): Promise<ApiResponse<Member>> => {
   const response = await apiClient.post<ApiResponse<Member>>('/members', memberForm(data, photo))
+  invalidateSiteDataCache()
   return response.data
 }
 
@@ -330,11 +350,13 @@ export const updateMember = async (
     `/members/${id}`,
     memberForm(data, photo)
   )
+  invalidateSiteDataCache()
   return response.data
 }
 
 export const deleteMember = async (id: number): Promise<ApiResponse<void>> => {
   const response = await apiClient.delete<ApiResponse<void>>(`/members/${id}`)
+  invalidateSiteDataCache()
   return response.data
 }
 
@@ -358,6 +380,7 @@ export const createProgram = async (
   image?: File | null
 ): Promise<ApiResponse<Program>> => {
   const response = await apiClient.post<ApiResponse<Program>>('/programs', programForm(data, image))
+  invalidateSiteDataCache()
   return response.data
 }
 
@@ -370,11 +393,13 @@ export const updateProgram = async (
     `/programs/${id}`,
     programForm(data, image)
   )
+  invalidateSiteDataCache()
   return response.data
 }
 
 export const deleteProgram = async (id: number): Promise<ApiResponse<void>> => {
   const response = await apiClient.delete<ApiResponse<void>>(`/programs/${id}`)
+  invalidateSiteDataCache()
   return response.data
 }
 
@@ -386,5 +411,6 @@ export const getContact = async (): Promise<Contact | null> => {
 
 export const updateContact = async (data: Partial<Contact>): Promise<ApiResponse<Contact>> => {
   const response = await apiClient.put<ApiResponse<Contact>>('/contact', data)
+  invalidateSiteDataCache()
   return response.data
 }

@@ -161,6 +161,26 @@ endpoint admin terverifikasi live (`/api/members` `department` = string "Sekreta
 
 ## Task Checklist v4 — Penutupan Fitur (Plan v4, 25 Okt 2026)
 
+### Temuan review sinkronisasi backend–frontend (25 Okt 2026)
+
+Diperiksa dengan mengeksekusi, bukan membaca: 37 rute backend vs 36 panggilan `api.ts`, bentuk respons tiap GET,
+15 permintaan tulis dengan payload persis seperti frontend, dan perbandingan daftar enum.
+
+Hasil: **tidak ada endpoint yang hilang atau salah bentuk**. Semua GET mengembalikan bentuk yang dibaca
+`unwrapList`/`data.data`, dan semua POST/PUT multipart (pengurus, proker, kabinet `_method=PUT`) diterima 200/201.
+
+Dua ketidaksinkronan nyata yang ditemukan dan diperbaiki:
+- **Kategori berita beda daftar** — backend hanya menerima `Akademik, Organisasi, Kegiatan, Pengumuman, Prestasi,
+  Lainnya`; frontend menawarkan `Sosial` dan tidak punya `Pengumuman`/`Organisasi`/`Lainnya`. Terbukti: POST berita
+  kategori `Sosial` → **422**, padahal 4 berita seed dan artikel "Bakti Sosial" memakai kategori itu. Diperbaiki:
+  `News::CATEGORIES` jadi satu sumber (7 nilai), `NewsController` memakai konstanta itu, dan frontend
+  (`components/News.tsx` + dropdown dashboard) memakai daftar yang sama. Uji ulang: 7 kategori → 201 semua.
+- **ID ganda di form kontak** — `ContactsTab` memakai `id="field-contactstab-1"` di dalam `.map()`, jadi kelima
+  input berbagi satu `id` dan semua label menunjuk input pertama. Diperbaiki jadi `id={`kontak-${f.key}`}`.
+
+Catatan (bukan bug): rute `GET /news/{id}` tidak dipanggil frontend karena `content` sudah ikut di daftar;
+`PUT /cabinets/{id}` dipanggil sebagai `POST` + `_method=PUT` (multipart), bukan pelanggaran kontrak.
+
 ### Phase 12: Fitur yang belum tersambung (P0)
 - [x] **Task 43** Landing "Program Kerja" dari API — `components/Programs.tsx` ditulis ulang: 4 kartu hardcode
       (`majorPrograms`) dihapus, render `data.programs` filter `type === 'Program Kerja'` (16 baris) dari
@@ -177,29 +197,83 @@ endpoint admin terverifikasi live (`/api/members` `department` = string "Sekreta
       Bukti: typecheck 0, 7 test hijau, build ✓, Chromium: 4 kartu, dialog `aria-modal=true`, fokus "Tutup detail
       berita", Escape & klik latar menutup lalu fokus balik ke "Baca Selengkapnya", teks dialog cocok dengan
       `content` API (224 karakter).
-- [ ] **Task 45** Pesan validasi 422 terbaca di 6 tab CRUD (helper `pesanError`)
+- [x] **Task 45** Pesan validasi 422 terbaca di 6 tab CRUD — helper `pesanError(err, bawaan)` di `services/api.ts`
+      (urutan: pesan validasi pertama → `message` server → "Tidak bisa menghubungi server…" → bawaan). Dipakai 6 tab
+      CRUD + `AccountTab` + `AdminDashboard` + `AspirationContact`. 4 catch di `AdminDashboard` yang dulu menelan
+      error (optimistic "berhasil (Lokal)", `id: Date.now()`) diperbaiki: gagal server → tampilan dikembalikan +
+      pesan asli. Temuan tambahan: pesan masih Inggris → `backend/lang/id/validation.php` dibuat + `APP_LOCALE=id`.
+      Bukti: `pesanError.test.ts` 4 test, `ApiErrorsTest` +1 test bahasa Indonesia; live Chromium simpan pengurus
+      NPM 60 karakter → toast "NPM maksimal 50 karakter." (dulu "The npm field must not be greater than 50 characters.").
 - [ ] **Task 46** Commit + push bertema (109 berkas, `origin/main` masih `c946bd9`)
 
 ### Checkpoint Phase 12
 - [ ] Proker & berita landing dari database; form admin menyebut field salah; repo bersih & ter-push
 
 ### Phase 13: Kelengkapan fungsi (P1)
-- [ ] **Task 47** Tombol hapus kabinet (`deleteCabinet` sudah ada, belum dipanggil)
-- [ ] **Task 48** Kontak & kategori aspirasi satu sumber (hardcode vs backend 7 kategori)
-- [ ] **Task 49** Modal & form admin aksesibel (dialog, Escape, 25 label `htmlFor`)
-- [ ] **Task 50** Ekspor CSV tanpa potong 100 baris
-- [ ] **Task 51** Test CRUD yang belum tersentuh (37 -> >=50)
+- [x] **Task 47** Hapus kabinet dari dashboard — `tabs/CabinetTab.tsx` ditulis ulang (152 → 286 baris): daftar semua
+      kabinet dengan badge AKTIF/ARSIP + jumlah pengurus, tombol **Aktifkan** (hanya arsip), tombol **Hapus**
+      (disabled + tooltip untuk kabinet aktif), tombol **+ Kabinet Baru** & **Batal**, form diberi label `htmlFor`,
+      semua error lewat `pesanError`. Bukti: `tests/Feature/CabinetArchiveTest.php` 3 test hijau (satu aktif setelah
+      aktivasi, kabinet aktif 422 tidak terhapus, kabinet arsip terhapus); total backend 41 passed. Live Chromium:
+      daftar "Adhikara Karsa AKTIF 14 pengurus / UJI ARSIP ARSIP 0 pengurus", tombol Hapus pada kabinet aktif
+      `disabled=true` + title "Kabinet aktif tidak bisa dihapus", aktivasi menukar status, hapus arsip → toast
+      "Kabinet berhasil dihapus" dan baris hilang. Data uji & token dibersihkan (`cabinets=1`, token logout 200).
+- [x] **Task 48** Kontak & kategori aspirasi satu sumber — `components/AspirationContact.tsx`:
+      (1) 7 kategori disamakan dengan aturan backend (`KATEGORI`), dulu hanya 4 dan 3 di antaranya ditolak 422;
+      (2) daftar saluran komunikasi (`akunMedsos`) dibangun dari `/api/site` → `contact` (Instagram, TikTok,
+      YouTube, Gmail) + WhatsApp yang belum punya kolom di tabel `contact`. Tidak ada lagi handle hardcode.
+      Bukti: typecheck 0, 11 test hijau, build ✓; 7 kategori di-POST ke API → semuanya 201 (baris uji dihapus,
+      `aspirations=0`); Chromium: select berisi 7 opsi, blok kontak menampilkan Instagram/TikTok/YouTube/Gmail/
+      WhatsApp; ubah Instagram jadi `@uji_sementara` lewat API → reload landing berubah (lalu dipulihkan
+      `@hmtpunisba`, token dicabut `tokens=0`).
+- [x] **Task 49** Modal & form admin aksesibel — `AdminDashboard.tsx`: kedua modal (detail aspirasi & berita) kini
+      `role="dialog"` + `aria-modal="true"` + `aria-labelledby`, Escape menutup, klik latar menutup, fokus pindah ke
+      tombol tutup saat dibuka dan **kembali ke tombol pemicu** saat ditutup (`pemicuModalRef`). Semua 25 input/select/
+      textarea di 6 tab CRUD + modal berita diberi `id` + `htmlFor` (0 label tanpa `htmlFor`), 7 kontrol filter diberi
+      `aria-label`. Bukti: typecheck 0, 11 test hijau, build ✓; Chromium: modal aspirasi `aria-modal=true`, fokus
+      "Tutup detail aspirasi", Escape → fokus balik ke tombol "Detail"; modal berita sama, fokus balik ke
+      "➕ Tulis Berita Baru".
+- [x] **Task 50** Ekspor CSV tanpa potong — `exportAspirationsCSV` sekarang async dan mengambil halaman berulang
+      (`per_page=100` sampai batch < 100), menulis CSV lewat `Blob` dengan BOM UTF-8 + CRLF (Excel membaca aksara
+      benar), escaping kutip ganda, toast menyebut jumlah baris. Label tombol jadi "Unduh CSV (bisa dibuka di Excel)"
+      sesuai R-07. Bukti: 188 baris di DB → klik tombol menghasilkan 189 baris (1 header + 188), BOM `EF BB BF`,
+      toast "Unduh CSV selesai: 188 aspirasi."; data uji & token dibersihkan (`aspirations=0`, `tokens=0`).
+- [x] **Task 51** Test CRUD yang belum tersentuh — dua berkas feature baru: `AdminCrudTest` (9 test: tambah/ubah/hapus
+      pengurus, validasi nama & kelompok, proker + jenis/status, bidang, 401 untuk tamu) dan
+      `AdminProfileContactTest` (6 test: visi/misi tambah + urutan + hapus, jenis & panjang ditolak, kontak
+      ter-update dan langsung tampil di `/api/site`, kontak tanpa email ditolak, 401 tamu). Frontend:
+      `components/__tests__/News.test.tsx` (4 test: kartu dari API bukan data karangan, detail berisi `content`
+      lengkap + fokus ke tombol tutup, Escape menutup & fokus kembali, filter pencarian).
+      Bukti: backend **56 passed (191 assertions)** dari 41; frontend **15 passed** dari 11; typecheck 0; build ✓.
 
 ### Checkpoint Phase 13
-- [ ] Semua endpoint punya test; dashboard bisa dipakai tanpa mouse
+- [x] Semua endpoint punya minimal satu test (56 test backend; members/programs/departments/cabinets/profile/contact
+      kini tercakup, termasuk jalur 401 dan 422)
+- [x] Dashboard bisa dipakai tanpa mouse (modal Escape + fokus kembali, label form terhubung, filter ber-`aria-label`)
+- [x] Data kontak & proker satu sumber (database)
 
 ### Phase 14: Rilis & dokumentasi (P1)
-- [ ] **Task 52** `openapi.yaml` 40 endpoint
-- [ ] **Task 53** `docs/DEPLOY.md` (termasuk rewrite SPA Nginx/Apache)
-- [ ] **Task 54** Pecah `AdminDashboard.tsx` 1213 baris
+- [x] **Task 52** `openapi.yaml` lengkap — ditulis ulang (60 baris → 22 path, 12 skema, 17 `$ref`): seluruh endpoint
+      (`/site`, auth, aspirasi, berita, kabinet, bidang, pengurus, proker, profil, kontak), penanda 🔒 untuk yang
+      butuh Bearer, enum nilai yang benar (7 kategori aspirasi, jenis/status proker), `per_page` maksimal 100,
+      contoh body, dan respons 401/404/422. Bukti: `yaml.safe_load` OK; dibandingkan otomatis dengan
+      `php artisan route:list --path=api --json` → **0 rute tidak terdokumentasi, 0 dokumentasi tanpa rute**;
+      semua `$ref` resolve; setiap operasi punya `responses`.
+- [x] **Task 54** Pecah `AdminDashboard.tsx` — 1.290 → **724 baris**; tiga tab besar jadi berkas sendiri:
+      `tabs/OverviewTab.tsx` (199), `tabs/AspirationsTab.tsx` (278), `tabs/NewsTab.tsx` (169). State saringan/
+      urutan/paginasi pindah ke tab masing-masing; dashboard tinggal data, modal, dan aksi server. Kode mati
+      `_loading`/`setLoading` dibuang, `fetchData` diberi `catch` luar supaya kegagalan health-check tidak diam.
+      Bukti: typecheck 0, 15 test hijau, build ✓ (`AdminDashboard-*.js` 73,5 kB / 14,5 kB gzip), oxlint 0 error;
+      Chromium: 10 tab tampil, filter aspirasi "Saran" menyisakan 1 baris, tab berita 4 kartu + cari/urut/Tulis Berita,
+      modal berita `aria-modal` + Escape kembali ke tombol pemicu, tab Profil/Kabinet/Bidang/Pengurus/Proker/Kontak/Akun
+      semua termuat.
 
 ### Checkpoint Selesai v4
-- [ ] P0 tertutup; P1 tertutup/backlog disetujui; repo ter-push; dokumen lengkap; berita acara
+- [x] Semua P0 tertutup (Task 43-46; Task 46 = commit lokal `2dea5d2`, push tertunda karena kredensial GitHub)
+- [x] P1 tertutup kecuali Task 53 (`docs/DEPLOY.md`) — ditunda atas permintaan pemilik: "deploy nanti aja"
+- [ ] Repo ter-push ke `origin/main` (butuh login GitHub pemilik)
+- [x] Dokumen: `README.md`, `backend/openapi.yaml`, `tasks/plan.md`, `tasks/todo.md`
+- [ ] Berita acara serah terima ditandatangani (butuh manusia)
 
 ---
 

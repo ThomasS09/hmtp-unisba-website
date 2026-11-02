@@ -15,11 +15,30 @@ const load = (): Promise<SiteData> => {
   return cache
 }
 
+// Invalidate cache saat admin CRUD (dipanggil dari api.ts)
+export const invalidateSiteData = () => {
+  cache = null
+}
+
 export function useSiteData() {
   const [data, setData] = useState<SiteData | null>(null)
+  const [refetchCount, setRefetchCount] = useState(0)
+
+  useEffect(() => {
+    // Listen untuk invalidation event dari admin CRUD
+    const handleInvalidate = () => {
+      setRefetchCount(c => c + 1)
+    }
+    window.addEventListener('siteDataInvalidate', handleInvalidate)
+    return () => window.removeEventListener('siteDataInvalidate', handleInvalidate)
+  }, [])
 
   useEffect(() => {
     let alive = true
+    // Invalidate cache saat dependency berubah (refetchCount atau manual call)
+    if (refetchCount > 0) {
+      cache = null
+    }
     load()
       .then((d) => {
         if (alive) setData(d)
@@ -28,7 +47,7 @@ export function useSiteData() {
     return () => {
       alive = false
     }
-  }, [])
+  }, [refetchCount])
 
   return { data, loading: data === null }
 }

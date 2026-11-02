@@ -1,4 +1,4 @@
-import { useState, useEffect } from 'react'
+import { useState, useEffect, useCallback } from 'react'
 import { getDepartments, createDepartment, updateDepartment, deleteDepartment, pesanError } from '../../../services/api'
 import TableSkeleton from '../../../components/admin/TableSkeleton'
 import type { Department } from '../../../types'
@@ -14,7 +14,7 @@ export default function DepartmentsTab({ showToast }: Props) {
   const [editingId, setEditingId] = useState<number | null>(null)
   const [formData, setFormData] = useState({ name: '', sort_order: 0 })
 
-  const loadData = async () => {
+  const loadData = useCallback(async () => {
     setLoading(true)
     try {
       setItems(await getDepartments())
@@ -24,11 +24,11 @@ export default function DepartmentsTab({ showToast }: Props) {
     } finally {
       setLoading(false)
     }
-  }
+  }, [showToast])
 
   useEffect(() => {
     loadData()
-  }, [])
+  }, [loadData])
 
   const resetForm = () => {
     setEditingId(null)
@@ -83,8 +83,9 @@ export default function DepartmentsTab({ showToast }: Props) {
       <form onSubmit={handleSubmit} className="glass-panel p-5 rounded-2xl border border-white/10 space-y-3">
         <div className="grid grid-cols-1 sm:grid-cols-3 gap-3">
           <div className="sm:col-span-2 space-y-1.5">
-            <label className="text-xs font-semibold uppercase text-gray-300">Nama Bidang</label>
+            <label className="text-xs font-semibold uppercase text-gray-300" htmlFor="field-departmentstab-1">Nama Bidang</label>
             <input
+              id="field-departmentstab-1"
               type="text"
               required
               value={formData.name}
@@ -94,8 +95,9 @@ export default function DepartmentsTab({ showToast }: Props) {
             />
           </div>
           <div className="space-y-1.5">
-            <label className="text-xs font-semibold uppercase text-gray-300">Urutan</label>
+            <label className="text-xs font-semibold uppercase text-gray-300" htmlFor="field-departmentstab-2">Urutan</label>
             <input
+              id="field-departmentstab-2"
               type="number"
               value={formData.sort_order}
               onChange={(e) => setFormData({ ...formData, sort_order: Number(e.target.value) })}

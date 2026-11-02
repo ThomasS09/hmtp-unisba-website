@@ -18,7 +18,7 @@ class AdminPasswordTest extends TestCase
 
     private function admin(): User
     {
-        return User::factory()->create(['password' => Hash::make(self::LAMA)]);
+        return User::factory()->create(['password' => Hash::make(self::LAMA), 'is_admin' => true]);
     }
 
     private function payload(array $override = []): array

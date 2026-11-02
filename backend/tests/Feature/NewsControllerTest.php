@@ -63,7 +63,7 @@ class NewsControllerTest extends TestCase
     /** @test */
     public function admin_can_create_news()
     {
-        $user = User::factory()->create();
+        $user = User::factory()->create(['is_admin' => true]);
 
         $newsData = [
             'title' => 'New Article',
@@ -89,7 +89,7 @@ class NewsControllerTest extends TestCase
     /** @test */
     public function news_creation_fails_with_invalid_category()
     {
-        $user = User::factory()->create();
+        $user = User::factory()->create(['is_admin' => true]);
 
         $response = $this->actingAs($user, 'sanctum')
             ->postJson('/api/news', [
@@ -106,7 +106,7 @@ class NewsControllerTest extends TestCase
     /** @test */
     public function news_creation_fails_with_short_content()
     {
-        $user = User::factory()->create();
+        $user = User::factory()->create(['is_admin' => true]);
 
         $response = $this->actingAs($user, 'sanctum')
             ->postJson('/api/news', [
@@ -123,7 +123,7 @@ class NewsControllerTest extends TestCase
     /** @test */
     public function admin_can_update_news()
     {
-        $user = User::factory()->create();
+        $user = User::factory()->create(['is_admin' => true]);
         $news = News::factory()->create(['title' => 'Old Title']);
 
         $response = $this->actingAs($user, 'sanctum')
@@ -143,7 +143,7 @@ class NewsControllerTest extends TestCase
     /** @test */
     public function admin_can_delete_news()
     {
-        $user = User::factory()->create();
+        $user = User::factory()->create(['is_admin' => true]);
         $news = News::factory()->create();
 
         $response = $this->actingAs($user, 'sanctum')

@@ -84,7 +84,7 @@ class HmtpSiteTest extends TestCase
 
     public function test_admin_member_list_flattens_department(): void
     {
-        $user = User::factory()->create();
+        $user = User::factory()->create(['is_admin' => true]);
 
         $response = $this->actingAs($user, 'sanctum')->getJson('/api/members');
 
@@ -95,7 +95,7 @@ class HmtpSiteTest extends TestCase
 
     public function test_admin_program_list_flattens_department(): void
     {
-        $user = User::factory()->create();
+        $user = User::factory()->create(['is_admin' => true]);
 
         $response = $this->actingAs($user, 'sanctum')->getJson('/api/programs');
 

@@ -9,6 +9,13 @@ class News extends Model
 {
     use HasFactory;
 
+    /**
+     * Satu-satunya daftar kategori berita.
+     * Dipakai validasi backend dan harus sama dengan daftar di frontend
+     * (`components/News.tsx` + dropdown kategori di dashboard).
+     */
+    public const CATEGORIES = ['Kegiatan', 'Prestasi', 'Akademik', 'Sosial', 'Pengumuman', 'Organisasi', 'Lainnya'];
+
     protected $table = 'news';
 
     protected $fillable = [

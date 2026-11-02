@@ -1,4 +1,4 @@
-import { useState, useEffect } from 'react'
+import { useState, useEffect, useCallback } from 'react'
 import { getProfileItems, createProfileItem, updateProfileItem, deleteProfileItem, pesanError } from '../../../services/api'
 import TableSkeleton from '../../../components/admin/TableSkeleton'
 import type { ProfileItem } from '../../../types'
@@ -15,7 +15,7 @@ export default function ProfileTab({ showToast }: Props) {
   const [editingId, setEditingId] = useState<number | null>(null)
   const [submitting, setSubmitting] = useState(false)
 
-  const loadData = async () => {
+  const loadData = useCallback(async () => {
     setLoading(true)
     try {
       setItems(await getProfileItems())
@@ -25,11 +25,11 @@ export default function ProfileTab({ showToast }: Props) {
     } finally {
       setLoading(false)
     }
-  }
+  }, [showToast])
 
   useEffect(() => {
     loadData()
-  }, [])
+  }, [loadData])
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault()
@@ -105,10 +105,11 @@ export default function ProfileTab({ showToast }: Props) {
 
       {/* Form Card */}
       <form onSubmit={handleSubmit} className="glass-panel p-5 rounded-2xl border border-white/10 space-y-3">
-        <label className="block text-xs font-semibold uppercase tracking-wider text-gray-300">
+        <label className="block text-xs font-semibold uppercase tracking-wider text-gray-300" htmlFor="field-profiletab-1">
           {editingId ? `Edit Butir ${activeType.toUpperCase()}` : `Tambah Butir ${activeType.toUpperCase()}`}
         </label>
         <textarea
+          id="field-profiletab-1"
           rows={3}
           value={content}
           onChange={(e) => setContent(e.target.value)}

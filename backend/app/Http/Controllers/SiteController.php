@@ -6,6 +6,7 @@ use App\Models\Cabinet;
 use App\Models\Contact;
 use App\Models\Department;
 use App\Models\Member;
+use App\Models\News;
 use App\Models\Program;
 use App\Models\ProfileItem;
 use App\Http\Controllers\Traits\ApiResponse;
@@ -73,6 +74,7 @@ class SiteController extends Controller
                 'department' => $p->department?->name,
                 'department_slug' => $p->department?->slug,
             ]),
+            'news' => News::latest()->limit(10)->get(['id', 'title', 'excerpt', 'category', 'date', 'author', 'read_time'])->toArray(),
             'contact' => Contact::first(),
         ], 'Data situs berhasil diambil.');
     }
