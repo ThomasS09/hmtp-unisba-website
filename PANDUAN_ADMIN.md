@@ -15,7 +15,7 @@ jangan cari di kode.
 | 5 | Kabinet & Struktur | Kabinet (nama + periode) + Profil & Narasi → **Sambutan** + Pengurus + Bidang | Nama kabinet, sambutan, foto & jabatan pengurus, daftar bidang |
 | 6 | Program Kerja | Proker & Aker | Nama proker/aker, bidang, status |
 | 7 | Berita & Artikel | Kelola Berita & Artikel | Judul, kategori, isi, gambar |
-| 8 | Aspirasi & Kontak | Kontak & Medsos (+ Kotak Aspirasi untuk pesan masuk) | Alamat, email, telepon, Instagram, WhatsApp |
+| 8 | Aspirasi & Kontak | Kontak & Medsos (+ Kotak Aspirasi untuk pesan masuk) | Email, website, Instagram, TikTok, YouTube |
 
 Catatan: isi yang **kosong** akan menampilkan teks bawaan program. Jadi kalau
 salah, cukup kosongkan / isi ulang — halaman tidak akan rusak.
@@ -40,6 +40,10 @@ salah, cukup kosongkan / isi ulang — halaman tidak akan rusak.
   — browser kadang masih menyimpan versi lama.
 - Kalau admin bilang "Tidak bisa menghubungi server", berarti backend mati.
   Nyalakan `php artisan serve` di folder `backend`.
+- Kolom **Judul** pada Timeline Sejarah dan Elemen Logo wajib diisi; tanpa judul
+  kartunya kosong, jadi admin menolak menyimpan.
+- Satu akun hanya bisa dipakai di satu tempat. Login di HP akan mengeluarkan
+  sesi di laptop (dan sebaliknya) — bukan kerusakan, cukup login ulang.
 
 ## Sudah semua bisa diubah dari admin
 

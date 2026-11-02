@@ -4,6 +4,7 @@ namespace App\Http\Controllers;
 
 use App\Models\ProfileItem;
 use Illuminate\Http\Request;
+use Illuminate\Validation\ValidationException;
 use App\Http\Controllers\Traits\ApiResponse;
 
 class ProfileItemController extends Controller
@@ -58,7 +59,7 @@ class ProfileItemController extends Controller
 
     private function validateItem(Request $request): array
     {
-        return $request->validate([
+        $validated = $request->validate([
             'type' => 'required|string|in:' . implode(',', ProfileItem::TYPES),
             'body' => 'required|string|min:5|max:2000',
             // Dipakai butir berstruktur (timeline & elemen logo); butir teks biasa boleh kosong.
@@ -73,5 +74,12 @@ class ProfileItemController extends Controller
             'body.min' => 'Isi butir minimal 5 karakter.',
             'body.max' => 'Isi butir maksimal 2000 karakter.',
         ]);
+
+        // Butir berstruktur tampil sebagai kartu; tanpa judul kartunya kosong.
+        if (in_array($validated['type'], ['timeline', 'logo-elemen'], true) && blank($validated['heading'] ?? null)) {
+            throw ValidationException::withMessages(['heading' => 'Judul wajib diisi untuk jenis butir ini.']);
+        }
+
+        return $validated;
     }
 }

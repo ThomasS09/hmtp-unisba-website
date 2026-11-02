@@ -38,7 +38,7 @@ npm run dev                    # http://localhost:3000
 ### Perintah pemeriksaan
 
 ```bash
-cd backend && php artisan test        # 66 test
+cd backend && php artisan test        # 68 test
 cd frontend && npx vitest run         # 18 test
 cd frontend && npm run typecheck && npm run lint && npm run build
 ```

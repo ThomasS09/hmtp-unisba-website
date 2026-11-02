@@ -63,7 +63,7 @@ Route::middleware(['auth:sanctum', 'admin'])->group(function () {
     // Admin Cabinets
     Route::get('/cabinets', [CabinetController::class, 'index'])->middleware('throttle:60,1');
     Route::post('/cabinets', [CabinetController::class, 'store'])->middleware('throttle:60,1');
-    Route::put('/cabinets/{id}', [CabinetController::class, 'update'])->middleware('throttle:60,1');
+    Route::match(['post', 'put'], '/cabinets/{id}', [CabinetController::class, 'update'])->middleware('throttle:60,1'); // multipart (logo)
     Route::post('/cabinets/{id}/activate', [CabinetController::class, 'activate'])->middleware('throttle:60,1');
     Route::delete('/cabinets/{id}', [CabinetController::class, 'destroy'])->middleware('throttle:60,1');
 
@@ -76,12 +76,14 @@ Route::middleware(['auth:sanctum', 'admin'])->group(function () {
     // Admin Members (Pengurus)
     Route::get('/members', [MemberController::class, 'index'])->middleware('throttle:60,1');
     Route::post('/members', [MemberController::class, 'store'])->middleware('throttle:60,1');
-    Route::post('/members/{id}', [MemberController::class, 'update'])->middleware('throttle:60,1'); // POST untuk multipart form-data
+    // Multipart (foto): terima POST biasa maupun POST + _method=PUT dari axios.
+    // Method spoofing mengubah method sebelum routing, jadi rute PUT harus ada.
+    Route::match(['post', 'put'], '/members/{id}', [MemberController::class, 'update'])->middleware('throttle:60,1');
     Route::delete('/members/{id}', [MemberController::class, 'destroy'])->middleware('throttle:60,1');
 
     // Admin Programs (Proker & Aker)
     Route::post('/programs', [ProgramController::class, 'store'])->middleware('throttle:60,1');
-    Route::post('/programs/{id}', [ProgramController::class, 'update'])->middleware('throttle:60,1'); // POST untuk multipart form-data
+    Route::match(['post', 'put'], '/programs/{id}', [ProgramController::class, 'update'])->middleware('throttle:60,1'); // multipart (gambar)
     Route::delete('/programs/{id}', [ProgramController::class, 'destroy'])->middleware('throttle:60,1');
 
     // Admin Contacts

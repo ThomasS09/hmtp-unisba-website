@@ -48,6 +48,20 @@ class AdminProfileContactTest extends TestCase
         $this->assertDatabaseMissing('profile_items', ['id' => $item->id]);
     }
 
+    public function test_butir_berstruktur_wajib_punya_judul(): void
+    {
+        $this->postJson('/api/profile-items', [
+            'type' => 'timeline',
+            'body' => 'Deskripsi tanpa judul tahun.',
+        ])->assertStatus(422)->assertJsonValidationErrors('heading');
+
+        $this->postJson('/api/profile-items', [
+            'type' => 'timeline',
+            'heading' => '2019',
+            'body' => 'Berdiri sebagai himpunan mandiri.',
+        ])->assertStatus(201);
+    }
+
     public function test_jenis_butir_selain_visi_misi_ditolak(): void
     {
         $this->postJson('/api/profile-items', [

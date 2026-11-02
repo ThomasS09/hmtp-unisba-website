@@ -93,6 +93,43 @@ class AdminCrudTest extends TestCase
         $this->assertDatabaseMissing('members', ['id' => $member->id]);
     }
 
+    public function test_pengurus_dan_proker_bisa_diperbarui_lewat_spoofing_method(): void
+    {
+        // Dashboard mengirim multipart (ada foto) dengan _method=PUT; method spoofing
+        // mengubah method sebelum routing, jadi rutenya harus menerima PUT juga.
+        $member = Member::create([
+            'cabinet_id' => $this->kabinet->id,
+            'kelompok' => 'Pengurus Inti',
+            'position' => 'Sekretaris',
+            'name' => 'Nama Spoof',
+        ]);
+
+        $this->post("/api/members/{$member->id}", [
+            '_method' => 'PUT',
+            'cabinet_id' => $this->kabinet->id,
+            'kelompok' => 'Pengurus Inti',
+            'position' => 'Sekretaris Umum',
+            'name' => 'Nama Spoof',
+        ])->assertStatus(200);
+
+        $this->assertSame('Sekretaris Umum', $member->fresh()->position);
+
+        $program = Program::create([
+            'cabinet_id' => $this->kabinet->id,
+            'department_id' => $this->bidang->id,
+            'name' => 'Proker Spoof',
+            'type' => 'Program Kerja',
+            'status' => 'Rencana',
+        ]);
+
+        $this->post("/api/programs/{$program->id}", [
+            '_method' => 'PUT',
+            'status' => 'Selesai',
+        ])->assertStatus(200);
+
+        $this->assertSame('Selesai', $program->fresh()->status);
+    }
+
     public function test_proker_bisa_ditambahkan_dengan_jenis_dan_status(): void
     {
         $this->postJson('/api/programs', [

@@ -440,3 +440,28 @@ blok-halaman → tab-admin, sehingga pengurus tidak tahu harus mengubah di mana.
       `php artisan test` 66 passed (216 assertions); `tests/integration_check.py` ALL PASS
 - [x] Tidak ada teks keras tersisa di 8 blok halaman depan
 - [ ] Uji di HP asli oleh pengurus (butuh manusia)
+
+## Phase 16 — Audit kelengkapan CRUD (frontend + backend)
+
+- [x] **Task 61** Matriks CRUD otomatis — `backend/tests/crud_matrix.py` menguji lewat HTTP:
+      login → create/read/update/delete untuk pengurus, proker, bidang, berita, kabinet,
+      butir profil, aspirasi, kontak, site settings + tolak tamu (401). 46 cek, data uji
+      selalu dipulihkan. Bukti: `46 cek lewat, 0 gagal | ALL PASS`.
+- [x] **Task 62** Perbaikan temuan audit —
+      (a) `/members/{id}`, `/programs/{id}`, `/cabinets/{id}` kini `Route::match(['post','put'])`
+      karena axios mengirim `_method=PUT` pada multipart dan method spoofing terjadi
+      sebelum routing (sebelumnya update dari UI bisa 405);
+      (b) butir `timeline`/`logo-elemen` wajib punya `heading` (kartu tanpa judul = kosong);
+      (c) dua test baru: `AdminCrudTest` (spoofing method) + `AdminProfileContactTest` (heading wajib).
+- [x] **Task 63** Uji klik nyata di `/admin` — Beranda, Profil, Pengurus, Proker, Bidang,
+      Kabinet, Berita (tambah → ubah → hapus), Aspirasi (ubah status → hapus), Kontak,
+      Akun (ganti password lalu dikembalikan) semuanya tersimpan; data uji dibersihkan.
+- [x] **Task 64** Dokumentasi — `PANDUAN_ADMIN.md` menambah catatan judul wajib dan
+      satu-akun-satu-sesi; README mencatat 68 test backend / 18 frontend.
+
+### Checkpoint Phase 16
+- [x] `tests/crud_matrix.py` 46/46; `php artisan test` 68 passed (224 assertions)
+- [x] `npx tsc --noEmit` 0 error; `npm run build` ✓ (8,22 s); `npx vitest run` 18/18
+- [x] `tests/integration_check.py` ALL PASS; data produksi kembali ke kondisi awal
+      (news 5, members 14, programs 49, departments 11, kabinet 1 aktif, timeline 4, logo 8)
+- [ ] Deploy — ditunda sesuai arahan (fokus fitur CRUD)
