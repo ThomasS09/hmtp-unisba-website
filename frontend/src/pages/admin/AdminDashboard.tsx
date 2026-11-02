@@ -9,7 +9,6 @@ import {
   deleteNews,
   updateAspirationStatus,
   deleteAspiration,
-  checkHealth,
   pesanError,
 } from '../../services/api'
 import logo from '../../assets/logo.jpg'
@@ -26,6 +25,7 @@ import ContactsTab from './tabs/ContactsTab'
 import AccountTab from './tabs/AccountTab'
 import OverviewTab from './tabs/OverviewTab'
 import AspirationsTab from './tabs/AspirationsTab'
+import TombolSimpan from '../../components/admin/TombolSimpan'
 import NewsTab from './tabs/NewsTab'
 
 interface AdminUser {
@@ -67,6 +67,7 @@ export default function AdminDashboard() {
     excerpt: '',
     content: '',
   })
+  const [newsSubmitting, setNewsSubmitting] = useState(false)
 
   // Fokus modal: dikembalikan ke tombol pemicu saat modal ditutup
   const modalAspirasiTutupRef = useRef<HTMLButtonElement | null>(null)
@@ -96,10 +97,15 @@ export default function AdminDashboard() {
 
   // Toast / Feedback
   const [toastMessage, setToastMessage] = useState('')
+  const [toastError, setToastError] = useState(false)
 
-  const showToast = (msg: string) => {
+  // Pesan galat bertahan lebih lama + warna merah, supaya tidak terkecoh
+  // notifikasi sukses yang tampil sama.
+  const showToast = (msg: string, jenis: 'ok' | 'error' = 'ok') => {
+    const gagal = jenis === 'error'
+    setToastError(gagal)
     setToastMessage(msg)
-    setTimeout(() => setToastMessage(''), 3500)
+    setTimeout(() => setToastMessage(''), gagal ? 7000 : 3000)
   }
 
   // Fokus pindah ke tombol tutup begitu modal terbuka (pengguna keyboard tidak tersesat)
@@ -111,33 +117,29 @@ export default function AdminDashboard() {
     if (isNewsModalOpen) modalBeritaTutupRef.current?.focus()
   }, [isNewsModalOpen])
 
-  // Fetch initial data
+  // Fetch initial data: dua permintaan paralel, bukan berurutan.
+  // Status "API Online" diambil dari hasil permintaan itu sendiri, jadi tidak
+  // ada lagi request health-check terpisah yang bisa berbeda kesimpulan.
   const fetchData = useCallback(async () => {
-    try {
-      const health = await checkHealth()
-      setBackendOnline(health.ok)
+    const [aspRes, newsRes] = await Promise.allSettled([
+      getAspirations({ per_page: 100 }),
+      getNews({ per_page: 100 }),
+    ])
 
-      // Aspirasi dari API (tanpa data palsu)
-      try {
-        const aspData = await getAspirations({ per_page: 100 })
-        setAspirations(Array.isArray(aspData) ? aspData : [])
-      } catch (e) {
-        setAspirations([])
-        showToast(pesanError(e, 'Gagal memuat aspirasi. Coba refresh.'))
-      }
+    setBackendOnline(aspRes.status === 'fulfilled' && newsRes.status === 'fulfilled')
 
-      // Berita dari API (tanpa data palsu)
-      try {
-        const newsData = await getNews({ per_page: 100 })
-        setNewsList(Array.isArray(newsData) ? newsData : [])
-      } catch (e) {
-        setNewsList([])
-        showToast(pesanError(e, 'Gagal memuat berita. Coba refresh.'))
-      }
-    } catch (e) {
-      // checkHealth sendiri tidak pernah melempar, jadi ini jaring pengaman
-      setBackendOnline(false)
-      showToast(pesanError(e, 'Gagal menghubungi server. Coba refresh.'))
+    if (aspRes.status === 'fulfilled') {
+      setAspirations(Array.isArray(aspRes.value) ? aspRes.value : [])
+    } else {
+      setAspirations([])
+      showToast(pesanError(aspRes.reason, 'Gagal memuat aspirasi. Coba refresh.'), 'error')
+    }
+
+    if (newsRes.status === 'fulfilled') {
+      setNewsList(Array.isArray(newsRes.value) ? newsRes.value : [])
+    } else {
+      setNewsList([])
+      showToast(pesanError(newsRes.reason, 'Gagal memuat berita. Coba refresh.'), 'error')
     }
   }, [])
 
@@ -167,7 +169,7 @@ export default function AdminDashboard() {
       setAspirations((prev) =>
         prev.map((a) => (a.id === item.id ? { ...a, status: item.status } : a))
       )
-      showToast(pesanError(e, `Gagal mengubah status aspirasi ke ${newStatus}`))
+      showToast(pesanError(e, `Gagal mengubah status aspirasi ke ${newStatus}`), 'error')
     }
   }
 
@@ -181,7 +183,7 @@ export default function AdminDashboard() {
       if (selectedAspiration?.id === id) setSelectedAspiration(null)
       showToast('Aspirasi berhasil dihapus.')
     } catch (e) {
-      showToast(pesanError(e, 'Gagal menghapus aspirasi'))
+      showToast(pesanError(e, 'Gagal menghapus aspirasi'), 'error')
     }
   }
 
@@ -222,7 +224,7 @@ export default function AdminDashboard() {
       URL.revokeObjectURL(url)
       showToast(`Unduh CSV selesai: ${semua.length} aspirasi.`)
     } catch (e) {
-      showToast(pesanError(e, 'Gagal mengekspor aspirasi.'))
+      showToast(pesanError(e, 'Gagal mengekspor aspirasi.'), 'error')
     }
   }
 
@@ -253,6 +255,8 @@ export default function AdminDashboard() {
 
   const handleSaveNews = async (e: FormEvent<HTMLFormElement>) => {
     e.preventDefault()
+    if (newsSubmitting) return
+    setNewsSubmitting(true)
     try {
       if (editingNews) {
         if (backendOnline) {
@@ -277,7 +281,9 @@ export default function AdminDashboard() {
       }
       setIsNewsModalOpen(false)
     } catch (e) {
-      showToast(pesanError(e, 'Gagal menyimpan berita'))
+      showToast(pesanError(e, 'Gagal menyimpan berita'), 'error')
+    } finally {
+      setNewsSubmitting(false)
     }
   }
 
@@ -290,7 +296,7 @@ export default function AdminDashboard() {
       setNewsList((prev) => prev.filter((n) => n.id !== id))
       showToast('Berita berhasil dihapus.')
     } catch (e) {
-      showToast(pesanError(e, 'Gagal menghapus berita'))
+      showToast(pesanError(e, 'Gagal menghapus berita'), 'error')
     }
   }
 
@@ -313,8 +319,16 @@ export default function AdminDashboard() {
     <div className="min-h-screen bg-[#0d0d0d] text-white flex flex-col font-inter selection:bg-primary selection:text-black">
       {/* Toast Notification */}
       {toastMessage && (
-        <div className="fixed top-6 right-6 z-50 px-5 py-3 rounded-xl bg-primary text-black font-semibold text-xs shadow-2xl animate-fade-in flex items-center gap-2">
-          <span>✨</span>
+        <div
+          role="status"
+          aria-live="polite"
+          className={`fixed top-6 right-6 z-50 px-5 py-3 rounded-xl font-semibold text-xs shadow-2xl animate-fade-in flex items-center gap-2 max-w-sm ${
+            toastError
+              ? 'bg-red-500/95 text-white border border-red-300/40'
+              : 'bg-primary text-black'
+          }`}
+        >
+          <span>{toastError ? '⚠️' : '✅'}</span>
           <span>{toastMessage}</span>
         </div>
       )}
@@ -617,7 +631,7 @@ export default function AdminDashboard() {
           >
             <div className="flex items-center justify-between pb-4 border-b border-white/10 mb-5">
               <span id="judul-modal-berita" className="font-poppins font-bold text-base text-white">
-                {editingNews ? 'Edit Artikel Berita' : 'Tulis Berita Baru'}
+                {editingNews ? '✏️ Ubah Artikel Berita' : '➕ Tulis Berita Baru'}
               </span>
               <button
                 type="button"
@@ -709,12 +723,7 @@ export default function AdminDashboard() {
                 >
                   Batal
                 </button>
-                <button
-                  type="submit"
-                  className="px-5 py-2 rounded-xl bg-primary text-black font-semibold text-xs hover:bg-yellow-400 transition-colors cursor-pointer"
-                >
-                  {editingNews ? 'Simpan Perubahan' : 'Terbitkan Berita'}
-                </button>
+                <TombolSimpan submitting={newsSubmitting} />
               </div>
             </form>
           </div>

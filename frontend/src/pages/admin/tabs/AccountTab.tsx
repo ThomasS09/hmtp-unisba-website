@@ -1,8 +1,9 @@
 import { useState } from 'react'
 import { changeAdminPassword, pesanError } from '../../../services/api'
+import TombolSimpan from '../../../components/admin/TombolSimpan'
 
 interface Props {
-  showToast: (msg: string) => void
+  showToast: (msg: string, jenis?: 'ok' | 'error') => void
 }
 
 /**
@@ -41,7 +42,7 @@ export default function AccountTab({ showToast }: Props) {
     } catch (err: unknown) {
       const detail = (err as { response?: { data?: { errors?: Record<string, string[]> } } })?.response?.data?.errors
       if (detail) setErrors(Object.fromEntries(Object.entries(detail).map(([k, v]) => [k, v[0]])))
-      showToast(pesanError(err, 'Gagal mengganti password'))
+      showToast(pesanError(err, 'Gagal mengganti password'), 'error')
     } finally {
       setSubmitting(false)
     }
@@ -97,13 +98,7 @@ export default function AccountTab({ showToast }: Props) {
         </div>
 
         <div className="flex justify-end pt-3">
-          <button
-            type="submit"
-            disabled={submitting}
-            className="px-6 py-2.5 text-xs font-bold rounded-xl bg-primary hover:bg-dark-gold text-black transition-all disabled:opacity-50 cursor-pointer"
-          >
-            {submitting ? 'Menyimpan...' : 'Simpan Password Baru'}
-          </button>
+          <TombolSimpan submitting={submitting} />
         </div>
       </form>
     </div>

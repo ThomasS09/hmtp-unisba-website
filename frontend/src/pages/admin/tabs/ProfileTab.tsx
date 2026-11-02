@@ -1,10 +1,11 @@
 import { useState, useEffect, useCallback } from 'react'
 import { getProfileItems, createProfileItem, updateProfileItem, deleteProfileItem, pesanError } from '../../../services/api'
 import TableSkeleton from '../../../components/admin/TableSkeleton'
+import TombolSimpan from '../../../components/admin/TombolSimpan'
 import type { ProfileItem } from '../../../types'
 
 interface Props {
-  showToast: (msg: string) => void
+  showToast: (msg: string, jenis?: 'ok' | 'error') => void
 }
 
 export default function ProfileTab({ showToast }: Props) {
@@ -21,7 +22,7 @@ export default function ProfileTab({ showToast }: Props) {
       setItems(await getProfileItems())
     } catch (e) {
       console.error(e)
-      showToast(pesanError(e, 'Gagal memuat data profil'))
+      showToast(pesanError(e, 'Gagal memuat data profil'), 'error')
     } finally {
       setLoading(false)
     }
@@ -48,7 +49,7 @@ export default function ProfileTab({ showToast }: Props) {
       loadData()
     } catch (e) {
       console.error(e)
-      showToast(pesanError(e, 'Gagal menyimpan profil'))
+      showToast(pesanError(e, 'Gagal menyimpan profil'), 'error')
     } finally {
       setSubmitting(false)
     }
@@ -68,7 +69,7 @@ export default function ProfileTab({ showToast }: Props) {
       loadData()
     } catch (e) {
       console.error(e)
-      showToast(pesanError(e, 'Gagal menghapus item'))
+      showToast(pesanError(e, 'Gagal menghapus item'), 'error')
     }
   }
 
@@ -106,7 +107,7 @@ export default function ProfileTab({ showToast }: Props) {
       {/* Form Card */}
       <form onSubmit={handleSubmit} className="glass-panel p-5 rounded-2xl border border-white/10 space-y-3">
         <label className="block text-xs font-semibold uppercase tracking-wider text-gray-300" htmlFor="field-profiletab-1">
-          {editingId ? `Edit Butir ${activeType.toUpperCase()}` : `Tambah Butir ${activeType.toUpperCase()}`}
+          {editingId ? `✏️ Ubah Butir ${activeType.toUpperCase()}` : `➕ Tambah Butir ${activeType.toUpperCase()}`}
         </label>
         <textarea
           id="field-profiletab-1"
@@ -126,13 +127,7 @@ export default function ProfileTab({ showToast }: Props) {
               Batal
             </button>
           )}
-          <button
-            type="submit"
-            disabled={submitting || !content.trim()}
-            className="px-5 py-2 text-xs font-bold rounded-xl bg-primary hover:bg-dark-gold text-black transition-all disabled:opacity-50"
-          >
-            {submitting ? 'Menyimpan...' : editingId ? 'Simpan Perubahan' : 'Tambah'}
-          </button>
+          <TombolSimpan submitting={submitting} disabled={!content.trim()} />
         </div>
       </form>
 

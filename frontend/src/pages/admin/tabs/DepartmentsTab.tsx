@@ -1,10 +1,11 @@
 import { useState, useEffect, useCallback } from 'react'
 import { getDepartments, createDepartment, updateDepartment, deleteDepartment, pesanError } from '../../../services/api'
 import TableSkeleton from '../../../components/admin/TableSkeleton'
+import TombolSimpan from '../../../components/admin/TombolSimpan'
 import type { Department } from '../../../types'
 
 interface Props {
-  showToast: (msg: string) => void
+  showToast: (msg: string, jenis?: 'ok' | 'error') => void
 }
 
 export default function DepartmentsTab({ showToast }: Props) {
@@ -20,7 +21,7 @@ export default function DepartmentsTab({ showToast }: Props) {
       setItems(await getDepartments())
     } catch (e) {
       console.error(e)
-      showToast(pesanError(e, 'Gagal memuat data bidang'))
+      showToast(pesanError(e, 'Gagal memuat data bidang'), 'error')
     } finally {
       setLoading(false)
     }
@@ -55,7 +56,7 @@ export default function DepartmentsTab({ showToast }: Props) {
       loadData()
     } catch (e) {
       console.error(e)
-      showToast(pesanError(e, 'Gagal menyimpan bidang'))
+      showToast(pesanError(e, 'Gagal menyimpan bidang'), 'error')
     } finally {
       setSubmitting(false)
     }
@@ -69,7 +70,7 @@ export default function DepartmentsTab({ showToast }: Props) {
       loadData()
     } catch (e) {
       console.error(e)
-      showToast(pesanError(e, 'Gagal menghapus bidang'))
+      showToast(pesanError(e, 'Gagal menghapus bidang'), 'error')
     }
   }
 
@@ -81,6 +82,9 @@ export default function DepartmentsTab({ showToast }: Props) {
       </div>
 
       <form onSubmit={handleSubmit} className="glass-panel p-5 rounded-2xl border border-white/10 space-y-3">
+        <p className="text-xs font-semibold uppercase text-primary">
+          {editingId ? '✏️ Ubah Bidang' : '➕ Tambah Bidang Baru'}
+        </p>
         <div className="grid grid-cols-1 sm:grid-cols-3 gap-3">
           <div className="sm:col-span-2 space-y-1.5">
             <label className="text-xs font-semibold uppercase text-gray-300" htmlFor="field-departmentstab-1">Nama Bidang</label>
@@ -115,13 +119,7 @@ export default function DepartmentsTab({ showToast }: Props) {
               Batal
             </button>
           )}
-          <button
-            type="submit"
-            disabled={submitting}
-            className="px-5 py-2 text-xs font-bold rounded-xl bg-primary hover:bg-dark-gold text-black transition-all disabled:opacity-50"
-          >
-            {submitting ? 'Menyimpan...' : editingId ? 'Simpan Perubahan' : 'Tambah Bidang'}
-          </button>
+          <TombolSimpan submitting={submitting} />
         </div>
       </form>
 

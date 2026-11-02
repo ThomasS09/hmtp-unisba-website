@@ -24,7 +24,10 @@ export const apiClient = axios.create({
     'Content-Type': 'application/json',
     Accept: 'application/json',
   },
-  timeout: 10000,
+  // Server lokal (php artisan serve) memproses satu request sekaligus dan
+  // bisa butuh >1 s tiap request; timeout pendek membuat UI salah mengira
+  // backend mati lalu menampilkan mode demo.
+  timeout: 30000,
 })
 
 // Request Interceptor: Attach Bearer Token if present
@@ -96,7 +99,13 @@ export const pesanError = (err: unknown, bawaan = 'Terjadi kesalahan. Coba lagi.
   const pesanPertama = data?.errors ? Object.values(data.errors)[0]?.[0] : undefined
   if (pesanPertama) return pesanPertama
   if (data?.message) return data.message
-  if ((err as { message?: string })?.message) return 'Tidak bisa menghubungi server. Periksa koneksi Anda.'
+  // Gangguan jaringan/timeout (tanpa respons server) dilaporkan sebagai masalah
+  // koneksi; 4xx/5xx memakai pesan backend di atas, sisanya pesan bawaan.
+  const kode = (err as { code?: string })?.code
+  const tanpaRespons = typeof err === 'object' && err !== null && !('response' in err)
+  if (kode === 'ERR_NETWORK' || kode === 'ECONNABORTED' || tanpaRespons) {
+    return 'Tidak bisa menghubungi server. Periksa koneksi Anda.'
+  }
   return bawaan
 }
 
@@ -190,16 +199,6 @@ export const deleteNews = async (id: number | string): Promise<ApiResponse<void>
 }
 
 // Health Check
-export const checkHealth = async (): Promise<{ ok: boolean; data?: unknown; error?: string }> => {
-  try {
-    const res = await apiClient.get('/news', { params: { limit: 1 } })
-    return { ok: true, data: res.data }
-  } catch (err: unknown) {
-    const errorMessage = err instanceof Error ? err.message : 'Unknown error'
-    return { ok: false, error: errorMessage }
-  }
-}
-
 // Data situs publik (profil, kabinet aktif, pengurus, proker, kontak)
 export const getSiteData = async (): Promise<SiteData> => {
   const response = await apiClient.get<ApiResponse<SiteData>>('/site')

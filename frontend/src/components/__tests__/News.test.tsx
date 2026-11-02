@@ -2,7 +2,7 @@ import { describe, it, expect, vi, beforeEach } from 'vitest';
 import { render, fireEvent, screen, waitFor } from '@testing-library/react';
 import '@testing-library/jest-dom';
 
-// getNews di-mock supaya test tidak menyentuh jaringan.
+// Data hook di-mock supaya test tidak menyentuh jaringan.
 const artikel = {
   id: 7,
   title: 'Kunjungan Industri Tambang 2026',
@@ -15,10 +15,11 @@ const artikel = {
   gradient: 'from-amber-600/30 to-yellow-500/25',
 };
 
-vi.mock('../../services/api', async () => {
-  const asli = await vi.importActual<typeof import('../../services/api')>('../../services/api');
-  return { ...asli, getNews: vi.fn(async () => [artikel]) };
-});
+// Komponen membaca data dari hook useSiteData (yang punya invalidasi cache),
+// jadi hook-nya yang di-mock, bukan getNews.
+vi.mock('../../hooks/useSiteData', () => ({
+  useSiteData: () => ({ data: { news: [artikel] }, loading: false }),
+}));
 
 import News from '../News';
 

@@ -8,10 +8,11 @@ import {
   pesanError,
 } from '../../../services/api'
 import TableSkeleton from '../../../components/admin/TableSkeleton'
+import TombolSimpan from '../../../components/admin/TombolSimpan'
 import type { Cabinet } from '../../../types'
 
 interface Props {
-  showToast: (msg: string) => void
+  showToast: (msg: string, jenis?: 'ok' | 'error') => void
 }
 
 const FORM_KOSONG = { name: '', period: '', name_meaning: '', is_active: false }
@@ -42,7 +43,7 @@ export default function CabinetTab({ showToast }: Props) {
         }
       }
     } catch (e) {
-      showToast(pesanError(e, 'Gagal memuat data kabinet'))
+      showToast(pesanError(e, 'Gagal memuat data kabinet'), 'error')
     } finally {
       setLoading(false)
     }
@@ -91,7 +92,7 @@ export default function CabinetTab({ showToast }: Props) {
       }
       loadData()
     } catch (e) {
-      showToast(pesanError(e, 'Gagal menyimpan kabinet'))
+      showToast(pesanError(e, 'Gagal menyimpan kabinet'), 'error')
     } finally {
       setSubmitting(false)
     }
@@ -103,7 +104,7 @@ export default function CabinetTab({ showToast }: Props) {
       showToast(`Kabinet ${c.name} diaktifkan`)
       loadData()
     } catch (e) {
-      showToast(pesanError(e, 'Gagal mengaktifkan kabinet'))
+      showToast(pesanError(e, 'Gagal mengaktifkan kabinet'), 'error')
     }
   }
 
@@ -115,7 +116,7 @@ export default function CabinetTab({ showToast }: Props) {
       if (editingId === c.id) mulaiBaru()
       loadData()
     } catch (e) {
-      showToast(pesanError(e, 'Gagal menghapus kabinet'))
+      showToast(pesanError(e, 'Gagal menghapus kabinet'), 'error')
     }
   }
 
@@ -197,7 +198,7 @@ export default function CabinetTab({ showToast }: Props) {
 
           <form onSubmit={handleSubmit} className="glass-panel p-6 rounded-2xl border border-white/10 space-y-4">
             <p className="text-xs font-semibold uppercase text-primary">
-              {editingId ? 'Ubah Kabinet' : 'Kabinet Baru'}
+              {editingId ? '✏️ Ubah Kabinet' : '➕ Tambah Kabinet Baru'}
             </p>
 
             <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
@@ -268,13 +269,7 @@ export default function CabinetTab({ showToast }: Props) {
                   Batal
                 </button>
               )}
-              <button
-                type="submit"
-                disabled={submitting}
-                className="px-6 py-2.5 text-xs font-bold rounded-xl bg-primary hover:bg-dark-gold text-black transition-all disabled:opacity-50 cursor-pointer"
-              >
-                {submitting ? 'Menyimpan...' : editingId ? 'Simpan Perubahan' : 'Buat Kabinet'}
-              </button>
+              <TombolSimpan submitting={submitting} />
             </div>
           </form>
         </>

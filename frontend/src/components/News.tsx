@@ -22,20 +22,15 @@ const categoryIcons: Record<string, string> = {
 // keluarkan `content` dari index dan muat lewat GET /api/news/{id}.
 export default function News() {
   const { data: site, loading: isLoading } = useSiteData()
-  const [articles, setArticles] = useState<NewsArticle[]>([])
-  const [loading, setLoading] = useState(true)
+  // Diturunkan langsung dari hook: tidak ada state salinan yang bisa
+  // basi atau memicu render berulang saat referensi data berubah.
+  const articles: NewsArticle[] = Array.isArray(site?.news) ? site.news : []
+  const loading = isLoading
   const [selectedCategory, setSelectedCategory] = useState('Semua')
   const [searchQuery, setSearchQuery] = useState('')
   const [selected, setSelected] = useState<NewsArticle | null>(null)
   const pemicuRef = useRef<HTMLButtonElement | null>(null)
   const tutupRef = useRef<HTMLButtonElement | null>(null)
-
-  useEffect(() => {
-    if (site?.news) {
-      setArticles(Array.isArray(site.news) ? site.news : [])
-    }
-    setLoading(isLoading)
-  }, [site?.news, isLoading])
 
   const tutup = () => {
     setSelected(null)

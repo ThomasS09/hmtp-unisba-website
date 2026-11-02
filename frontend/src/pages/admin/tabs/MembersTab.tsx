@@ -7,10 +7,11 @@ import {
   getDepartments,
   getCabinets, pesanError } from '../../../services/api'
 import TableSkeleton from '../../../components/admin/TableSkeleton'
+import TombolSimpan from '../../../components/admin/TombolSimpan'
 import type { Member, Department, Cabinet } from '../../../types'
 
 interface Props {
-  showToast: (msg: string) => void
+  showToast: (msg: string, jenis?: 'ok' | 'error') => void
 }
 
 export default function MembersTab({ showToast }: Props) {
@@ -49,7 +50,7 @@ export default function MembersTab({ showToast }: Props) {
       if (activeCab) setActiveCabinetId(activeCab.id)
     } catch (e) {
       console.error(e)
-      showToast(pesanError(e, 'Gagal memuat data pengurus'))
+      showToast(pesanError(e, 'Gagal memuat data pengurus'), 'error')
     } finally {
       setLoading(false)
     }
@@ -122,7 +123,7 @@ export default function MembersTab({ showToast }: Props) {
       loadData()
     } catch (e) {
       console.error(e)
-      showToast(pesanError(e, 'Gagal menyimpan pengurus'))
+      showToast(pesanError(e, 'Gagal menyimpan pengurus'), 'error')
     } finally {
       setSubmitting(false)
     }
@@ -136,7 +137,7 @@ export default function MembersTab({ showToast }: Props) {
       loadData()
     } catch (e) {
       console.error(e)
-      showToast(pesanError(e, 'Gagal menghapus pengurus'))
+      showToast(pesanError(e, 'Gagal menghapus pengurus'), 'error')
     }
   }
 
@@ -172,7 +173,7 @@ export default function MembersTab({ showToast }: Props) {
       {/* Form */}
       <form onSubmit={handleSubmit} className="glass-panel p-5 rounded-2xl border border-white/10 space-y-4">
         <h3 className="text-xs font-semibold uppercase tracking-wider text-primary">
-          {editingId ? 'Edit Data Pengurus' : 'Tambah Pengurus Baru'}
+          {editingId ? '✏️ Ubah Data Pengurus' : '➕ Tambah Pengurus Baru'}
         </h3>
 
         <div className="grid grid-cols-1 sm:grid-cols-3 gap-4">
@@ -302,13 +303,7 @@ export default function MembersTab({ showToast }: Props) {
               Batal
             </button>
           )}
-          <button
-            type="submit"
-            disabled={submitting}
-            className="px-5 py-2 text-xs font-bold rounded-xl bg-primary hover:bg-dark-gold text-black transition-all disabled:opacity-50"
-          >
-            {submitting ? 'Menyimpan...' : editingId ? 'Simpan Perubahan' : 'Tambah Pengurus'}
-          </button>
+          <TombolSimpan submitting={submitting} />
         </div>
       </form>
 

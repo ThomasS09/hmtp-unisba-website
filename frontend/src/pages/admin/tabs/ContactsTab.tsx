@@ -1,10 +1,11 @@
 import { useState, useEffect, useCallback } from 'react'
 import { getContact, updateContact, pesanError } from '../../../services/api'
 import TableSkeleton from '../../../components/admin/TableSkeleton'
+import TombolSimpan from '../../../components/admin/TombolSimpan'
 import type { Contact } from '../../../types'
 
 interface Props {
-  showToast: (msg: string) => void
+  showToast: (msg: string, jenis?: 'ok' | 'error') => void
 }
 
 const FIELDS: { key: keyof Contact; label: string; placeholder: string; type?: string }[] = [
@@ -41,7 +42,7 @@ export default function ContactsTab({ showToast }: Props) {
       }
     } catch (e) {
       console.error(e)
-      showToast(pesanError(e, 'Gagal memuat kontak organisasi'))
+      showToast(pesanError(e, 'Gagal memuat kontak organisasi'), 'error')
     } finally {
       setLoading(false)
     }
@@ -60,7 +61,7 @@ export default function ContactsTab({ showToast }: Props) {
       loadData()
     } catch (e) {
       console.error(e)
-      showToast(pesanError(e, 'Gagal menyimpan kontak'))
+      showToast(pesanError(e, 'Gagal menyimpan kontak'), 'error')
     } finally {
       setSubmitting(false)
     }
@@ -97,13 +98,7 @@ export default function ContactsTab({ showToast }: Props) {
           </div>
 
           <div className="flex justify-end pt-3">
-            <button
-              type="submit"
-              disabled={submitting}
-              className="px-6 py-2.5 text-xs font-bold rounded-xl bg-primary hover:bg-dark-gold text-black transition-all disabled:opacity-50"
-            >
-              {submitting ? 'Menyimpan...' : 'Simpan Perubahan Kontak'}
-            </button>
+            <TombolSimpan submitting={submitting} />
           </div>
         </form>
       )}
