@@ -204,7 +204,7 @@ Catatan (bukan bug): rute `GET /news/{id}` tidak dipanggil frontend karena `cont
       pesan asli. Temuan tambahan: pesan masih Inggris → `backend/lang/id/validation.php` dibuat + `APP_LOCALE=id`.
       Bukti: `pesanError.test.ts` 4 test, `ApiErrorsTest` +1 test bahasa Indonesia; live Chromium simpan pengurus
       NPM 60 karakter → toast "NPM maksimal 50 karakter." (dulu "The npm field must not be greater than 50 characters.").
-- [ ] **Task 46** Commit + push bertema (109 berkas, `origin/main` masih `c946bd9`)
+- [x] **Task 46** Commit + push bertema — commit lokal selesai (`2dea5d2` … `1588f17`); remote `origin/main` sudah disamakan (merge `6f0cc9a`). Push butuh kredensial GitHub pemilik.
 
 ### Checkpoint Phase 12
 - [ ] Proker & berita landing dari database; form admin menyebut field salah; repo bersih & ter-push
@@ -270,7 +270,8 @@ Catatan (bukan bug): rute `GET /news/{id}` tidak dipanggil frontend karena `cont
 
 ### Checkpoint Selesai v4
 - [x] Semua P0 tertutup (Task 43-46; Task 46 = commit lokal `2dea5d2`, push tertunda karena kredensial GitHub)
-- [x] P1 tertutup kecuali Task 53 (`docs/DEPLOY.md`) — ditunda atas permintaan pemilik: "deploy nanti aja"
+- [x] P1 tertutup termasuk Task 53 (`docs/DEPLOY.md`) — dokumen deploy ditulis 2 Nov 2026 (Nginx 1 & 2 domain, PHP-FPM/OPcache, SPA rewrite, checklist verifikasi, prosedur update + backup)
+- [ ] Push ke `origin/main` — tertunda, butuh login GitHub pemilik (CLI `gh` tidak terpasang)
 - [ ] Repo ter-push ke `origin/main` (butuh login GitHub pemilik)
 - [x] Dokumen: `README.md`, `backend/openapi.yaml`, `tasks/plan.md`, `tasks/todo.md`
 - [ ] Berita acara serah terima ditandatangani (butuh manusia)
@@ -395,4 +396,47 @@ Dependensi mati `jest`/`jest-environment-jsdom`/`@types/jest`/`http-server`/`pos
 - [x] Database: **MySQL** (dev & produksi), test tetap sqlite `:memory:`
 - [x] Ganti password admin: dibuatkan **menu di dashboard**
 
+---
 
+## Phase 15: Konten 100% bisa diubah dari admin (2 Nov 2026)
+
+Keluhan client: "segala ganti di admin tidak usah ubah codingan tetapi saat di admin
+ganti tampilan website jadi acak acakan". Akar masalah: sebagian teks halaman depan
+masih di kode (Beranda, timeline Sejarah, kartu elemen logo) dan tidak ada peta
+blok-halaman → tab-admin, sehingga pengurus tidak tahu harus mengubah di mana.
+
+- [x] **Task 55** Teks Beranda dari database — tabel `site_settings` (key-value:
+      `hero_badge`, `hero_title`, `hero_desc`, `hero_cta_primary`, `hero_cta_secondary`),
+      model `SiteSetting` dengan `DEFAULTS`/`values()` (kosong → bawaan), `GET/PUT
+      /api/site-settings` (bulk, key asing diabaikan, `throttle:60,1`), ikut dikirim di
+      `/api/site` supaya halaman tetap satu permintaan. Tab admin baru **Beranda**.
+      Bukti: ubah nama tombol di tab Beranda → halaman depan berubah tanpa build,
+      lalu dipulihkan lewat API.
+- [x] **Task 56** Timeline Sejarah & Elemen Logo dari database — `profile_items` dapat
+      kolom `heading(120)/subheading(160)/note(200)` dan jenis baru `timeline` +
+      `logo-elemen` (kolom `type` dilebarkan ke 20 karakter — `varchar(10)` menolak
+      `logo-elemen`). `History.tsx` & `LogoMeaning.tsx` merender dari API dengan teks
+      lama sebagai cadangan. Seeder `FrontPageContentSeeder` mengisi 3 entri timeline +
+      elemen logo hanya bila jenisnya masih kosong (idempoten, suntingan admin aman).
+      Bukti: landing menampilkan 4 kartu timeline + 8 kartu elemen dari DB; ubah satu
+      entri lewat admin → landing ikut berubah.
+- [x] **Task 57** Form admin berbasis konfigurasi — `ProfileTab.tsx` memakai satu array
+      `JENIS` (7 jenis) yang menentukan label, petunjuk, dan daftar field tiap jenis
+      (narasi = 1 textarea; timeline = tahun/judul/tanggal-lokasi/deskripsi;
+      elemen logo = nama/emoji/arti). Menambah jenis baru = menambah satu entri.
+- [x] **Task 58** Satu sumber untuk setiap teks — blok `About.tsx` dihapus (duplikat
+      Sejarah/Arti Logo), navigasi `#about` dibuang, email di Kebijakan Privasi kini
+      mengikuti tab Kontak & Medsos (bukan teks keras).
+- [x] **Task 59** Dokumentasi untuk pengurus — `PANDUAN_ADMIN.md`: tabel 8 blok halaman
+      depan → tab admin → apa yang diisi, urutan kerja 7 langkah, aturan "ubah satu,
+      simpan, lihat", dan aturan "kosong = teks bawaan".
+- [x] **Task 60** README & deploy — `README.md` diperbarui (13 tab, 66 test backend /
+      18 frontend, tautan dokumen), `docs/DEPLOY.md` ditulis (Task 53), termasuk
+      peringatan SPA rewrite dan larangan `php artisan serve` untuk produksi.
+
+### Checkpoint Phase 15
+- [x] `grep -L useSiteData components/*.tsx` → hanya Navbar (label navigasi = desain)
+- [x] `npx tsc --noEmit` 0 error; `npm run build` ✓ (6,86 s); `npx vitest run` 18/18;
+      `php artisan test` 66 passed (216 assertions); `tests/integration_check.py` ALL PASS
+- [x] Tidak ada teks keras tersisa di 8 blok halaman depan
+- [ ] Uji di HP asli oleh pengurus (butuh manusia)
