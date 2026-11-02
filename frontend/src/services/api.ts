@@ -5,7 +5,6 @@ import type {
   AspirationInput,
   LoginCredentials,
   AuthResponse,
-  User,
   ApiResponse,
   SiteData,
   ProfileItem,
@@ -131,18 +130,10 @@ export const loginAdmin = async (credentials: LoginCredentials): Promise<AuthRes
 export const logoutAdmin = async (): Promise<void> => {
   try {
     await apiClient.post('/logout')
-  } catch (err) {
-    localStorage.removeItem('token')
-    localStorage.removeItem('admin_user')
   } finally {
     localStorage.removeItem('token')
     localStorage.removeItem('admin_user')
   }
-}
-
-export const getAdminProfile = async (): Promise<User> => {
-  const response = await apiClient.get<User>('/me')
-  return response.data
 }
 
 export const changeAdminPassword = async (data: {

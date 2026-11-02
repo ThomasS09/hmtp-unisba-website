@@ -16,8 +16,6 @@ backend/composer.phar
 !.env.example
 !*.env.example
 !frontend/.env.production.example
-backend/.env.example
-frontend/.env.example
 *.sqlite
 backend/database/*.sqlite
 

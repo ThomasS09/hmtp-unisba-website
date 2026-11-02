@@ -15,9 +15,12 @@ const load = (): Promise<SiteData> => {
   return cache
 }
 
-// Invalidate cache saat admin CRUD (dipanggil dari api.ts)
-export const invalidateSiteData = () => {
-  cache = null
+// Admin CRUD memicu event ini; cache dibersihkan di level modul supaya
+// halaman publik tidak memakai data basi walau belum ada komponen ter-mount.
+if (typeof window !== 'undefined') {
+  window.addEventListener('siteDataInvalidate', () => {
+    cache = null
+  })
 }
 
 export function useSiteData() {

@@ -465,3 +465,26 @@ blok-halaman → tab-admin, sehingga pengurus tidak tahu harus mengubah di mana.
 - [x] `tests/integration_check.py` ALL PASS; data produksi kembali ke kondisi awal
       (news 5, members 14, programs 49, departments 11, kabinet 1 aktif, timeline 4, logo 8)
 - [ ] Deploy — ditunda sesuai arahan (fokus fitur CRUD)
+
+## Phase 17 — Bersih-bersih (clean code)
+
+- [x] **Task 65** Hapus berkas mati — `assets/` (3 jpg duplikat, isinya identik dengan
+      `frontend/src/assets/`), `dogfood-output/` (screenshot + rencana tanpa rujukan),
+      `frontend/src/assets/hero.png` (tak diimpor), `ADMIN_UX_REVIEW.md` (isi sudah
+      dikerjakan, tidak dirujuk dokumen lain), `backend/tests/Feature/ExampleTest.php` +
+      `tests/Unit/ExampleTest.php` (stub bawaan Laravel), suite `Unit` kosong di `phpunit.xml`, `RateLimitRequests.php` (middleware tak terdaftar/tak dipakai).
+- [x] **Task 66** Kode mati — `invalidateSiteData` (export tanpa pemakai), `getAdminProfile`
+      (endpoint `/me` tak dipanggil UI), `mockRouter` (helper tes tanpa pemakai),
+      import `User` sisa, `use App\Models\User` + komentar mati di `DatabaseSeeder`,
+      `catch` duplikat di `logoutAdmin`, dua baris `.gitignore` yang sudah tercakup pola lain.
+- [x] **Task 67** Bug cache halaman publik — cache `useSiteData` dulu hanya dibersihkan
+      bila ada komponen ter-mount, sehingga setelah admin menyimpan lalu membuka landing
+      lewat menu (tanpa reload) halaman bisa memakai data lama. Kini pembersihan
+      didaftarkan di level modul; event `siteDataInvalidate` selalu mengosongkan cache.
+      Bukti: ubah judul hero di admin → klik 🌐 Lihat Web → `<h1>` langsung berubah.
+
+### Checkpoint Phase 17
+- [x] `npx tsc --noEmit` 0 error; `npm run build` ✓ (7,08 s); `npx vitest run` 18/18
+- [x] `php artisan test` 66 passed (222 assertions, dua `ExampleTest` dibuang)
+- [x] `tests/crud_matrix.py` 46/46; `tests/integration_check.py` ALL PASS
+- [x] `git ls-files` 199 → 192 berkas; tidak ada sisa rujukan ke berkas yang dihapus
