@@ -98,7 +98,7 @@ class SiteController extends Controller
                 'description' => $p->description,
                 'schedule' => $p->schedule,
                 'status' => $p->status,
-                'image_url' => $p->image_path ? asset('storage/' . $p->image_path) : null,
+                'image_url' => $p->image_url,
                 'department' => $p->department?->name,
                 'department_slug' => $p->department?->slug,
             ]),

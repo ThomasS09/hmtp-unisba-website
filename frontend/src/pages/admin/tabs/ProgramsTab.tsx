@@ -320,6 +320,13 @@ export default function ProgramsTab({ showToast }: Props) {
               key={p.id}
               className="glass-panel p-4 rounded-xl border border-white/10 flex flex-col sm:flex-row sm:items-center justify-between gap-3"
             >
+              {p.image_url && (
+                <img
+                  src={p.image_url}
+                  alt=""
+                  className="w-14 h-14 rounded-lg object-cover border border-white/10 flex-shrink-0"
+                />
+              )}
               <div className="space-y-1 flex-1 min-w-0">
                 <div className="flex items-center gap-2 flex-wrap">
                   <span

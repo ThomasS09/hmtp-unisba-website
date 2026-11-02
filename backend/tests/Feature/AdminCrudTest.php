@@ -8,6 +8,8 @@ use App\Models\Member;
 use App\Models\Program;
 use App\Models\User;
 use Illuminate\Foundation\Testing\RefreshDatabase;
+use Illuminate\Http\UploadedFile;
+use Illuminate\Support\Facades\Storage;
 use Laravel\Sanctum\Sanctum;
 use Tests\TestCase;
 
@@ -201,5 +203,31 @@ class AdminCrudTest extends TestCase
         $this->postJson('/api/members', ['name' => 'X'])->assertStatus(401);
         $this->postJson('/api/programs', ['name' => 'X'])->assertStatus(401);
         $this->postJson('/api/departments', ['name' => 'X'])->assertStatus(401);
+    }
+    public function test_lampiran_gambar_proker_muncul_sebagai_url(): void
+    {
+        Storage::fake('public');
+
+        $this->post('/api/programs', [
+            'cabinet_id' => $this->kabinet->id,
+            'department_id' => $this->bidang->id,
+            'name' => 'Proker Berlampiran',
+            'type' => 'Program Kerja',
+            'status' => 'Rencana',
+            'image' => UploadedFile::fake()->image('lampiran.jpg', 400, 300),
+        ])->assertStatus(201);
+
+        $program = Program::where('name', 'Proker Berlampiran')->firstOrFail();
+        $this->assertNotNull($program->image_path);
+        Storage::disk('public')->assertExists($program->image_path);
+
+        // Lampiran harus bisa dilihat admin (daftar proker) dan pengunjung (landing).
+        $this->getJson('/api/programs?per_page=50')
+            ->assertStatus(200)
+            ->assertJsonFragment(['name' => 'Proker Berlampiran', 'image_url' => $program->image_url]);
+
+        $this->getJson('/api/site')
+            ->assertStatus(200)
+            ->assertJsonFragment(['image_url' => $program->image_url]);
     }
 }

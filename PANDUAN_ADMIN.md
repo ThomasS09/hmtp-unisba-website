@@ -13,7 +13,7 @@ jangan cari di kode.
 | 3 | Arti Logo | Profil & Narasi → **Arti Logo** + **Elemen Logo** | Paragraf pembuka + kartu arti lambang (nama, emoji ikon, arti) |
 | 4 | Visi & Misi | Profil & Narasi → **Visi** / **Misi** | Butir visi & misi |
 | 5 | Kabinet & Struktur | Kabinet (nama + periode) + Profil & Narasi → **Sambutan** + Pengurus + Bidang | Nama kabinet, sambutan, foto & jabatan pengurus, daftar bidang |
-| 6 | Program Kerja | Proker & Aker | Nama proker/aker, bidang, status |
+| 6 | Program Kerja | Proker & Aker | Nama proker/aker, bidang, status, gambar (opsional) |
 | 7 | Berita & Artikel | Kelola Berita & Artikel | Judul, kategori, isi, gambar |
 | 8 | Aspirasi & Kontak | Kontak & Medsos (+ Kotak Aspirasi untuk pesan masuk) | Email, website, Instagram, TikTok, YouTube |
 
@@ -42,6 +42,8 @@ salah, cukup kosongkan / isi ulang — halaman tidak akan rusak.
   Nyalakan `php artisan serve` di folder `backend`.
 - Kolom **Judul** pada Timeline Sejarah dan Elemen Logo wajib diisi; tanpa judul
   kartunya kosong, jadi admin menolak menyimpan.
+- Lampiran gambar proker/aker (opsional) muncul sebagai gambar di kartu
+  Program Kerja pada halaman depan; tanpa gambar kartunya tetap rapi.
 - Satu akun hanya bisa dipakai di satu tempat. Login di HP akan mengeluarkan
   sesi di laptop (dan sebaliknya) — bukan kerusakan, cukup login ulang.
 

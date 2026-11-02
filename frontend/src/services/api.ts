@@ -22,7 +22,9 @@ const API_BASE_URL = import.meta.env.VITE_API_URL || 'http://localhost:8000/api'
 export const apiClient = axios.create({
   baseURL: API_BASE_URL,
   headers: {
-    'Content-Type': 'application/json',
+    // Jangan set Content-Type di sini: axios memilih JSON atau multipart
+    // (lengkap dengan boundary) sendiri. Header JSON bawaan membuat unggahan
+    // lampiran ditolak server sebagai "bukan gambar".
     Accept: 'application/json',
   },
   // Server lokal (php artisan serve) memproses satu request sekaligus dan

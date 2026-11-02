@@ -488,3 +488,22 @@ blok-halaman → tab-admin, sehingga pengurus tidak tahu harus mengubah di mana.
 - [x] `php artisan test` 66 passed (222 assertions, dua `ExampleTest` dibuang)
 - [x] `tests/crud_matrix.py` 46/46; `tests/integration_check.py` ALL PASS
 - [x] `git ls-files` 199 → 192 berkas; tidak ada sisa rujukan ke berkas yang dihapus
+
+## Phase 18 — Lampiran gambar proker (uji nyata)
+
+- [x] **Task 68** Unggah lampiran dari form admin gagal (`⚠️ Lampiran harus berupa gambar`)
+      walau server sehat. Akar masalah: `apiClient` di `frontend/src/services/api.ts`
+      menyetel `Content-Type: application/json` sebagai header bawaan, sehingga body
+      `FormData` terkirim tanpa boundary multipart dan PHP tidak melihat berkasnya.
+      Perbaikan: header itu dibuang, axios memilih JSON/multipart sendiri.
+- [x] **Task 69** Lampiran tersimpan tapi tidak pernah tampil. Kini `Program` punya
+      accessor `image_url` (`$appends`), `SiteController` memakainya, dan gambar
+      ditampilkan di kartu Program Kerja landing + thumbnail di daftar admin.
+      Uji baru: `test_lampiran_gambar_proker_muncul_sebagai_url` (Storage::fake).
+
+### Checkpoint Phase 18
+- [x] Unggah lewat UI: toast `✅ Program baru berhasil ditambahkan` + thumbnail muncul
+- [x] Landing menampilkan gambar (`<img alt="Proker Uji Lampiran">`, 200 `image/jpeg`)
+- [x] `php artisan test` 67 passed (230 assertions); `tsc` 0 error; `vitest` 18/18; `build` ✓
+- [x] `tests/crud_matrix.py` 46/46; `tests/integration_check.py` ALL PASS
+- [x] Data uji dibersihkan: proker uji dihapus, berkas lampiran dihapus, program kembali 49

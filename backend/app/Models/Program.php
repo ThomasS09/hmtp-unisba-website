@@ -25,6 +25,13 @@ class Program extends Model
         'status',
     ];
 
+    protected $appends = ['image_url'];
+
+    public function getImageUrlAttribute(): ?string
+    {
+        return $this->image_path ? asset('storage/' . $this->image_path) : null;
+    }
+
     public function cabinet(): BelongsTo
     {
         return $this->belongsTo(Cabinet::class);

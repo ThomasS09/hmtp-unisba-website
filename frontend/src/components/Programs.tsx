@@ -55,6 +55,14 @@ export default function Programs() {
                 className="bg-white/5 border border-white/10 hover:border-primary/30 p-8 rounded-3xl hover:bg-white/10 transition-all duration-300 group flex flex-col justify-between"
               >
                 <div>
+                  {prog.image_url && (
+                    <img
+                      src={prog.image_url}
+                      alt={prog.name}
+                      loading="lazy"
+                      className="w-full h-44 object-cover rounded-2xl border border-white/10 mb-6"
+                    />
+                  )}
                   <div className="flex flex-wrap items-center justify-between gap-3 mb-6">
                     <span className="font-inter text-xs font-semibold px-3 py-1 rounded-full bg-primary/10 border border-primary/20 text-primary">
                       {prog.department ?? 'Kabinet'}
