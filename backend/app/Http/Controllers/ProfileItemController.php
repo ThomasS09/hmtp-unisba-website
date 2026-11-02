@@ -15,6 +15,7 @@ class ProfileItemController extends Controller
         $items = ProfileItem::when($request->type, fn ($q, $t) => $q->where('type', $t))
             ->orderBy('type')
             ->orderBy('sort_order')
+            ->orderBy('id') // penentu urutan terakhir: sort_order kosong tidak bikin acak
             ->get();
 
         return $this->successResponse($items, 'Profil berhasil diambil.');

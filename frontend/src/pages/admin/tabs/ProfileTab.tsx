@@ -23,8 +23,6 @@ interface JenisDef {
   label: string
   hint: string
   fields: FieldDef[]
-  // Kata pengantar di daftar butir, mis. "Tahun" / "Elemen".
-  kolomKecil?: string
 }
 
 const KOSONG: Record<FieldKey, string> = { heading: '', subheading: '', note: '', body: '' }
@@ -66,7 +64,6 @@ const JENIS: JenisDef[] = [
     key: 'timeline',
     label: 'Timeline Sejarah',
     hint: 'Kartu-kartu perjalanan sejarah. Urutan tampil mengikuti urutan penyimpanan.',
-    kolomKecil: 'Tahun',
     fields: [
       { key: 'heading', label: 'Tahun / Penanda', rows: 1, wajib: true, placeholder: '1983' },
       { key: 'subheading', label: 'Judul Kartu', rows: 1, wajib: true, placeholder: 'Pembentukan & Fondasi Awal' },
@@ -78,7 +75,6 @@ const JENIS: JenisDef[] = [
     key: 'logo-elemen',
     label: 'Elemen Logo',
     hint: 'Kartu arti lambang. Emoji dipakai sebagai ikon kartu.',
-    kolomKecil: 'Ikon',
     fields: [
       { key: 'heading', label: 'Nama Elemen', rows: 1, wajib: true, placeholder: 'Palu dan Belincong' },
       { key: 'note', label: 'Emoji', rows: 1, placeholder: '⚒️' },
@@ -264,13 +260,13 @@ export default function ProfileTab({ showToast }: Props) {
             >
               <div className="flex items-start gap-3 min-w-0">
                 <span className="w-6 h-6 rounded-full bg-primary/20 text-primary font-bold text-xs flex items-center justify-center flex-shrink-0 mt-0.5">
-                  {aktif.kolomKecil && item.note ? item.note : idx + 1}
+                  {activeType === 'logo-elemen' && item.note ? item.note : idx + 1}
                 </span>
                 <div className="min-w-0">
                   <p className="text-xs sm:text-sm font-semibold text-white">
                     {[item.heading, item.subheading].filter(Boolean).join(' — ') || `Butir ${idx + 1}`}
                   </p>
-                  {aktif.kolomKecil && item.note && activeType === 'timeline' && (
+                  {activeType === 'timeline' && item.note && (
                     <p className="text-[11px] text-primary/80 mt-0.5">{item.note}</p>
                   )}
                   <p className="text-xs sm:text-sm text-gray-300 leading-relaxed mt-1">{item.body}</p>

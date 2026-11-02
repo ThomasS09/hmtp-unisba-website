@@ -1,6 +1,7 @@
 import { Link } from 'react-router-dom'
 import Navbar from '../components/Navbar'
 import Footer from '../components/Footer'
+import { useSiteData } from '../hooks/useSiteData'
 
 /**
  * Halaman kebijakan privasi singkat.
@@ -8,6 +9,10 @@ import Footer from '../components/Footer'
  * pengunjung berhak tahu data apa yang disimpan dan siapa yang bisa melihatnya.
  */
 export default function KebijakanPrivasi() {
+  const { data } = useSiteData()
+  // Email diambil dari tab Kontak & Medsos supaya tidak ada dua sumber.
+  const email = data?.contact?.email || 'hmtp.adhikarakarsa@gmail.com'
+
   return (
     <div className="bg-black text-white min-h-screen">
       <Navbar />
@@ -55,8 +60,8 @@ export default function KebijakanPrivasi() {
             <h2 className="font-poppins font-bold text-lg text-white mb-2">Kontak</h2>
             <p>
               Pertanyaan soal data pribadi:{' '}
-              <a className="text-primary hover:underline" href="mailto:hmtp.adhikarakarsa@gmail.com">
-                hmtp.adhikarakarsa@gmail.com
+              <a className="text-primary hover:underline" href={`mailto:${email}`}>
+                {email}
               </a>
             </p>
           </section>

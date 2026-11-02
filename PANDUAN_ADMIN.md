@@ -43,7 +43,9 @@ salah, cukup kosongkan / isi ulang — halaman tidak akan rusak.
 
 ## Sudah semua bisa diubah dari admin
 
-Seluruh teks 8 blok di atas kini ada tempatnya di admin. Yang tetap di kode
+Seluruh teks 8 blok di atas kini ada tempatnya di admin.
+Halaman Kebijakan Privasi otomatis memakai email dari tab Kontak & Medsos,
+jadi tidak perlu diubah terpisah. Yang tetap di kode
 hanya urutan blok dan desain tampilan — bukan isi.
 
 Tombol "Hapus" pada Beranda/Timeline/Elemen Logo tidak ada; kosongkan kolomnya
