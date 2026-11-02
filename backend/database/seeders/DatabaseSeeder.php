@@ -17,6 +17,7 @@ class DatabaseSeeder extends Seeder
             NewsSeeder::class,
             AdminUserSeeder::class,
             HmtpInitialSeeder::class,
+            FrontPageContentSeeder::class,
         ]);
     }
 }

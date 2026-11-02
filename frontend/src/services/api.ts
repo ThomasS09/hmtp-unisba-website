@@ -9,6 +9,8 @@ import type {
   ApiResponse,
   SiteData,
   ProfileItem,
+  ProfileItemInput,
+  SiteSettings,
   Cabinet,
   Department,
   Member,
@@ -205,14 +207,26 @@ export const getSiteData = async (): Promise<SiteData> => {
   return response.data.data as SiteData
 }
 
-// Admin: Profil (Visi & Misi)
+// Admin: Pengaturan Beranda (teks hero)
+export const getSiteSettings = async (): Promise<SiteSettings> => {
+  const response = await apiClient.get<ApiResponse<SiteSettings>>('/site-settings')
+  return response.data.data ?? {}
+}
+
+export const updateSiteSettings = async (settings: SiteSettings): Promise<SiteSettings> => {
+  const response = await apiClient.put<ApiResponse<SiteSettings>>('/site-settings', { settings })
+  invalidateSiteDataCache()
+  return response.data.data ?? {}
+}
+
+// Admin: Profil (visi/misi & narasi halaman)
 export const getProfileItems = async (): Promise<ProfileItem[]> => {
   const response = await apiClient.get<ApiResponse<ProfileItem[]>>('/profile-items')
   return response.data.data ?? []
 }
 
 export const createProfileItem = async (
-  data: Partial<ProfileItem>
+  data: ProfileItemInput
 ): Promise<ApiResponse<ProfileItem>> => {
   const response = await apiClient.post<ApiResponse<ProfileItem>>('/profile-items', data)
   invalidateSiteDataCache()
@@ -221,7 +235,7 @@ export const createProfileItem = async (
 
 export const updateProfileItem = async (
   id: number,
-  data: Partial<ProfileItem>
+  data: ProfileItemInput
 ): Promise<ApiResponse<ProfileItem>> => {
   const response = await apiClient.put<ApiResponse<ProfileItem>>(`/profile-items/${id}`, data)
   invalidateSiteDataCache()

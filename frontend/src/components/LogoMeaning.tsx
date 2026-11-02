@@ -76,6 +76,25 @@ export default function LogoMeaning() {
   // Narasi tambahan dari admin; blok bawaan tetap jadi fallback.
   const narasi = data?.profile?.logo ?? []
 
+  // Elemen logo diisi dari admin (heading=judul, note=emoji, body=arti).
+  // Warna aksen dipakai bergiliran supaya tiap kartu tetap berbeda.
+  const WARNA = [
+    'from-yellow-400 to-amber-500',
+    'from-gray-100 to-slate-300',
+    'from-amber-600 to-amber-900',
+    'from-yellow-300 to-yellow-500',
+    'from-amber-400 to-yellow-600',
+    'from-gray-800 to-black',
+  ]
+  const dariAdmin: ElementItem[] = (data?.profile?.logo_elemen ?? []).map((it, i) => ({
+    id: String(it.id),
+    title: it.heading ?? '',
+    desc: it.body,
+    icon: it.note || '📌',
+    color: WARNA[i % WARNA.length],
+  }))
+  const kartu = dariAdmin.length > 0 ? dariAdmin : elements
+
   return (
     <section id="logo-meaning" className="py-24 bg-light-gray text-white relative overflow-hidden">
       {/* Background decoration */}
@@ -130,7 +149,7 @@ export default function LogoMeaning() {
 
           {/* Right Column: Dynamic Cards Grid */}
           <div className="lg:col-span-7 grid grid-cols-1 sm:grid-cols-2 gap-4">
-            {elements.map((el) => {
+            {kartu.map((el) => {
               const isActive = activeElement === el.id
               return (
                 <div

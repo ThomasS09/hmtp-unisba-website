@@ -9,7 +9,7 @@ class ProfileItem extends Model
 {
     use HasFactory;
 
-    public const TYPES = ['visi', 'misi', 'sejarah', 'logo', 'sambutan'];
+    public const TYPES = ['visi', 'misi', 'sejarah', 'logo', 'sambutan', 'timeline', 'logo-elemen'];
 
     // Label yang dipakai admin, supaya tidak perlu menebak nama jenis.
     public const LABELS = [
@@ -18,10 +18,15 @@ class ProfileItem extends Model
         'sejarah' => 'Sejarah',
         'logo' => 'Arti Logo',
         'sambutan' => 'Sambutan Kabinet',
+        'timeline' => 'Timeline Sejarah',
+        'logo-elemen' => 'Elemen Logo',
     ];
 
     protected $fillable = [
         'type',
+        'heading',
+        'subheading',
+        'note',
         'body',
         'sort_order',
     ];

@@ -60,6 +60,10 @@ class ProfileItemController extends Controller
         return $request->validate([
             'type' => 'required|string|in:' . implode(',', ProfileItem::TYPES),
             'body' => 'required|string|min:5|max:2000',
+            // Dipakai butir berstruktur (timeline & elemen logo); butir teks biasa boleh kosong.
+            'heading' => 'nullable|string|max:120',
+            'subheading' => 'nullable|string|max:160',
+            'note' => 'nullable|string|max:200',
             'sort_order' => 'nullable|integer|min:0',
         ], [
             'type.required' => 'Jenis butir wajib dipilih.',

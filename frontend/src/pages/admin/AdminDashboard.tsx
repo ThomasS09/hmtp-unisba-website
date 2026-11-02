@@ -16,6 +16,7 @@ import logo from '../../assets/logo.jpg'
 // Sama dengan News::CATEGORIES di backend.
 const KATEGORI_BERITA = ['Kegiatan', 'Prestasi', 'Akademik', 'Sosial', 'Pengumuman', 'Organisasi', 'Lainnya']
 import type { Aspiration, NewsArticle, NewsInput, AspirationStatus } from '../../types'
+import HeroTab from './tabs/HeroTab'
 import ProfileTab from './tabs/ProfileTab'
 import CabinetTab from './tabs/CabinetTab'
 import DepartmentsTab from './tabs/DepartmentsTab'
@@ -37,7 +38,7 @@ interface AdminUser {
 export default function AdminDashboard() {
   const navigate = useNavigate()
   const [activeTab, setActiveTab] = useState<
-    'overview' | 'profile' | 'cabinet' | 'departments' | 'members' | 'programs' | 'contacts' | 'aspirations' | 'news' | 'account'
+    'overview' | 'hero' | 'profile' | 'cabinet' | 'departments' | 'members' | 'programs' | 'contacts' | 'aspirations' | 'news' | 'account'
   >('overview')
   
   // Data State
@@ -452,6 +453,7 @@ export default function AdminDashboard() {
 
           {(
             [
+              ['hero', '🏠', 'Beranda'],
               ['profile', '🏛️', 'Profil & Narasi'],
               ['cabinet', '⚙️', 'Kabinet'],
               ['departments', '🧩', 'Bidang'],
@@ -530,6 +532,7 @@ export default function AdminDashboard() {
           />
         )}
 
+        {activeTab === 'hero' && <HeroTab showToast={showToast} />}
         {activeTab === 'profile' && <ProfileTab showToast={showToast} />}
         {activeTab === 'cabinet' && <CabinetTab showToast={showToast} />}
         {activeTab === 'departments' && <DepartmentsTab showToast={showToast} />}

@@ -8,9 +8,9 @@ jangan cari di kode.
 
 | No | Blok di halaman depan | Diisi dari tab admin | Yang diisi |
 |----|----------------------|----------------------|------------|
-| 1 | Beranda (atas, nama himpunan + tombol) | — (teks tetap) | Nama & tagline himpunan |
-| 2 | Sejarah | Profil & Narasi → **Sejarah** | Paragraf pembuka sejarah |
-| 3 | Arti Logo | Profil & Narasi → **Arti Logo** | Paragraf pembuka arti logo |
+| 1 | Beranda (atas, nama himpunan + tombol) | **Beranda** | Label, judul, deskripsi, nama 2 tombol |
+| 2 | Sejarah | Profil & Narasi → **Sejarah** + **Timeline Sejarah** | Paragraf pembuka + kartu perjalanan sejarah (tahun, judul, tanggal/lokasi, deskripsi) |
+| 3 | Arti Logo | Profil & Narasi → **Arti Logo** + **Elemen Logo** | Paragraf pembuka + kartu arti lambang (nama, emoji ikon, arti) |
 | 4 | Visi & Misi | Profil & Narasi → **Visi** / **Misi** | Butir visi & misi |
 | 5 | Kabinet & Struktur | Kabinet (nama + periode) + Profil & Narasi → **Sambutan** + Pengurus + Bidang | Nama kabinet, sambutan, foto & jabatan pengurus, daftar bidang |
 | 6 | Program Kerja | Proker & Aker | Nama proker/aker, bidang, status |
@@ -41,10 +41,10 @@ salah, cukup kosongkan / isi ulang — halaman tidak akan rusak.
 - Kalau admin bilang "Tidak bisa menghubungi server", berarti backend mati.
   Nyalakan `php artisan serve` di folder `backend`.
 
-## Yang masih teks tetap (belum bisa diubah dari admin)
+## Sudah semua bisa diubah dari admin
 
-- Teks Beranda (nama himpunan, tombol "Kenali Kami").
-- Timeline tahun pada blok Sejarah (1983 dst).
-- 4 kartu elemen logo (Palu & Belincong, Kerang Putih, dst).
+Seluruh teks 8 blok di atas kini ada tempatnya di admin. Yang tetap di kode
+hanya urutan blok dan desain tampilan — bukan isi.
 
-Bilang ke developer kalau salah satu dari ini juga perlu bisa diganti.
+Tombol "Hapus" pada Beranda/Timeline/Elemen Logo tidak ada; kosongkan kolomnya
+maka halaman otomatis memakai teks bawaan.

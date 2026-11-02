@@ -45,15 +45,43 @@ export interface AspirationInput {
   is_anonymous?: boolean
 }
 
-// visi/misi dipakai blok Visi & Misi; tiga sisanya narasi halaman yang bisa
-// diganti pengurus dari admin (sejarah, arti logo, sambutan kabinet).
-export type ProfileType = 'visi' | 'misi' | 'sejarah' | 'logo' | 'sambutan'
+// visi/misi/narasi = paragraf polos (pakai `body` saja).
+// timeline & logo-elemen = butir berstruktur (heading/subheading/note + body).
+export type ProfileType =
+  | 'visi'
+  | 'misi'
+  | 'sejarah'
+  | 'logo'
+  | 'sambutan'
+  | 'timeline'
+  | 'logo-elemen'
 
 export interface ProfileItem {
   id: number
   type: ProfileType
+  heading?: string | null
+  subheading?: string | null
+  note?: string | null
   body: string
   sort_order: number
+}
+
+export interface ProfileItemInput {
+  type: ProfileType
+  heading?: string
+  subheading?: string
+  note?: string
+  body: string
+  sort_order?: number
+}
+
+// Teks beranda; key-nya mengikuti SiteSetting::DEFAULTS di backend.
+export interface SiteSettings {
+  hero_badge?: string
+  hero_title?: string
+  hero_desc?: string
+  hero_cta_primary?: string
+  hero_cta_secondary?: string
 }
 
 export interface Cabinet {
@@ -121,6 +149,8 @@ export interface SiteData {
     sejarah?: string[]
     logo?: string[]
     sambutan?: string[]
+    timeline?: ProfileItem[]
+    logo_elemen?: ProfileItem[]
   }
   cabinet: Cabinet | null
   cabinets: Cabinet[]
@@ -129,6 +159,7 @@ export interface SiteData {
   programs: Program[]
   news?: NewsArticle[]
   contact: Contact | null
+  settings?: SiteSettings
 }
 
 export interface User {

@@ -9,6 +9,7 @@ use App\Models\Member;
 use App\Models\News;
 use App\Models\Program;
 use App\Models\ProfileItem;
+use App\Models\SiteSetting;
 use App\Http\Controllers\Traits\ApiResponse;
 
 class SiteController extends Controller
@@ -30,15 +31,38 @@ class SiteController extends Controller
             ->orderBy('id')
             ->get();
 
+        // Satu query untuk semua butir profil, lalu dikelompokkan per jenis —
+        // server lokal hanya bisa melayani satu request sekaligus, jadi
+        // jumlah query ikut menentukan cepat/lambatnya halaman.
+        $items = ProfileItem::orderBy('sort_order')->orderBy('id')
+            ->get(['id', 'type', 'heading', 'subheading', 'note', 'body']);
+        $byType = $items->groupBy('type');
+
+        $bodies = fn (string $type) => ($byType[$type] ?? collect())->pluck('body')->values();
+        $cards = fn (string $type) => ($byType[$type] ?? collect())->map(fn (ProfileItem $i) => [
+            'id' => $i->id,
+            'heading' => $i->heading,
+            'subheading' => $i->subheading,
+            'note' => $i->note,
+            'body' => $i->body,
+        ])->values();
+
+        $profile = [
+            'visi' => $bodies('visi'),
+            'misi' => $bodies('misi'),
+            // Narasi yang bisa diganti pengurus dari admin.
+            'sejarah' => $bodies('sejarah'),
+            'logo' => $bodies('logo'),
+            'sambutan' => $bodies('sambutan'),
+            // Butir berstruktur: timeline sejarah & kartu elemen logo.
+            'timeline' => $cards('timeline'),
+            'logo_elemen' => $cards('logo-elemen'),
+        ];
+
         return $this->successResponse([
-            'profile' => [
-                'visi' => ProfileItem::where('type', 'visi')->orderBy('sort_order')->pluck('body'),
-                'misi' => ProfileItem::where('type', 'misi')->orderBy('sort_order')->pluck('body'),
-                // Narasi yang bisa diganti pengurus dari admin.
-                'sejarah' => ProfileItem::where('type', 'sejarah')->orderBy('sort_order')->pluck('body'),
-                'logo' => ProfileItem::where('type', 'logo')->orderBy('sort_order')->pluck('body'),
-                'sambutan' => ProfileItem::where('type', 'sambutan')->orderBy('sort_order')->pluck('body'),
-            ],
+            'profile' => $profile,
+            // Teks beranda (bisa diganti admin).
+            'settings' => SiteSetting::values(),
             'cabinet' => $cabinet ? [
                 'id' => $cabinet->id,
                 'name' => $cabinet->name,

@@ -12,6 +12,7 @@ use App\Http\Controllers\MemberController;
 use App\Http\Controllers\ProfileItemController;
 use App\Http\Controllers\ProgramController;
 use App\Http\Controllers\SiteController;
+use App\Http\Controllers\SiteSettingController;
 
 /*
 |--------------------------------------------------------------------------
@@ -54,6 +55,10 @@ Route::middleware(['auth:sanctum', 'admin'])->group(function () {
     Route::post('/profile-items', [ProfileItemController::class, 'store'])->middleware('throttle:60,1');
     Route::put('/profile-items/{id}', [ProfileItemController::class, 'update'])->middleware('throttle:60,1');
     Route::delete('/profile-items/{id}', [ProfileItemController::class, 'destroy'])->middleware('throttle:60,1');
+
+    // Admin Pengaturan Beranda (teks hero)
+    Route::get('/site-settings', [SiteSettingController::class, 'index'])->middleware('throttle:60,1');
+    Route::put('/site-settings', [SiteSettingController::class, 'update'])->middleware('throttle:60,1');
 
     // Admin Cabinets
     Route::get('/cabinets', [CabinetController::class, 'index'])->middleware('throttle:60,1');

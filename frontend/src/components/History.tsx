@@ -10,6 +10,7 @@ interface TimelineItem {
   desc: string
   icon: string
   image?: string
+  note?: string // dipakai butir dari admin: "tanggal · lokasi" dalam satu baris
 }
 
 // Static data defined outside component — avoids re-declaration on every render
@@ -50,10 +51,28 @@ const timelineData: TimelineItem[] = [
   },
 ]
 
+// Ikon/gambar tidak diisi admin; dipakai bergiliran supaya kartu tetap hidup.
+const IKON = ['🏛️', '🛡️', '⚒️', '🚀', '📜', '⛏️']
+
 export default function History() {
   const { data } = useSiteData()
   // Narasi bisa diganti pengurus di admin; kalau kosong pakai teks bawaan.
   const narasi = data?.profile?.sejarah ?? []
+  const gambar = [picture1, picture2]
+
+  // Timeline diisi dari admin (heading=tahun, subheading=judul, note=tanggal ·
+  // lokasi, body=deskripsi). Kalau admin belum mengisi, pakai teks bawaan.
+  const dariAdmin: TimelineItem[] = (data?.profile?.timeline ?? []).map((it, i) => ({
+    year: it.heading ?? '',
+    title: it.subheading ?? '',
+    date: '',
+    location: '',
+    desc: it.body,
+    note: it.note ?? undefined,
+    icon: IKON[i % IKON.length],
+    image: gambar[i],
+  }))
+  const timeline = dariAdmin.length > 0 ? dariAdmin : timelineData
   return (
     <section id="sejarah" className="py-24 bg-black text-white relative overflow-hidden">
       {/* Background radial glow */}
@@ -87,7 +106,7 @@ export default function History() {
           {/* Vertical Glowing Line */}
           <div className="absolute left-0 top-0 h-full w-[2px] bg-gradient-to-b from-primary via-primary/30 to-transparent"></div>
 
-          {timelineData.map((item, index) => (
+          {timeline.map((item, index) => (
             <div key={index} className="relative group">
 
               {/* Timeline Indicator Dot */}
@@ -110,7 +129,7 @@ export default function History() {
                         {item.title}
                       </h3>
                       <span className="font-inter text-xs text-primary/80 font-medium">
-                        {item.date} • {item.location}
+                        {item.note ?? `${item.date} • ${item.location}`}
                       </span>
                     </div>
                   </div>
