@@ -62,7 +62,7 @@ class ProfileItemController extends Controller
             'body' => 'required|string|min:5|max:2000',
             'sort_order' => 'nullable|integer|min:0',
         ], [
-            'type.required' => 'Jenis butir wajib dipilih (visi/misi).',
+            'type.required' => 'Jenis butir wajib dipilih.',
             'type.in' => 'Jenis butir tidak valid.',
             'body.required' => 'Isi butir wajib diisi.',
             'body.min' => 'Isi butir minimal 5 karakter.',

@@ -6,7 +6,6 @@ import ErrorBoundary from '../components/ErrorBoundary'
 
 const History = lazy(() => import('../components/History'))
 const LogoMeaning = lazy(() => import('../components/LogoMeaning'))
-const About = lazy(() => import('../components/About'))
 const VisionMission = lazy(() => import('../components/VisionMission'))
 const Structure = lazy(() => import('../components/Structure'))
 const Programs = lazy(() => import('../components/Programs'))
@@ -22,7 +21,6 @@ interface SectionItem {
 const lazySections: SectionItem[] = [
   { name: 'Sejarah', Component: History },
   { name: 'Makna Logo', Component: LogoMeaning },
-  { name: 'Tentang Kami', Component: About },
   { name: 'Visi & Misi', Component: VisionMission },
   { name: 'Struktur Organisasi', Component: Structure },
   { name: 'Program Kerja', Component: Programs },
@@ -36,13 +34,13 @@ export default function LandingPage() {
     <div className="bg-black text-white min-h-screen">
       <Navbar />
       <Hero />
-      <Suspense fallback={<Skeleton />}>
-        {lazySections.map(({ name, Component }, i) => (
-          <ErrorBoundary key={i} sectionName={name}>
+      {lazySections.map(({ name, Component }, i) => (
+        <ErrorBoundary key={i} sectionName={name}>
+          <Suspense fallback={<Skeleton />}>
             <Component />
-          </ErrorBoundary>
-        ))}
-      </Suspense>
+          </Suspense>
+        </ErrorBoundary>
+      ))}
     </div>
   )
 }

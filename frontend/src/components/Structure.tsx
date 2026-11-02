@@ -91,6 +91,8 @@ export default function Structure() {
   // supaya seluruh proker di database bisa dilihat pengunjung.
   const departments = data?.departments ?? []
   const programs = data?.programs ?? []
+  // Sambutan/narasi kabinet (dulu di blok About yang dihapus); bisa diganti dari admin.
+  const sambutan = data?.profile?.sambutan ?? []
 
   return (
     <section id="structure" className="py-24 bg-light-gray relative overflow-hidden">
@@ -112,6 +114,13 @@ export default function Structure() {
             Daftar pengurus inti dan pembagian bidang kerja yang menggerakkan organisasi HMTP UNISBA periode
             {` ${data?.cabinet?.period ?? ''}`}.
           </p>
+          {sambutan.length > 0 && (
+            <div className="mt-6 space-y-3">
+              {sambutan.map((par, i) => (
+                <p key={i} className="font-inter text-sm text-gray-300 leading-relaxed">{par}</p>
+              ))}
+            </div>
+          )}
         </div>
 
         {/* Pengurus Inti Section */}

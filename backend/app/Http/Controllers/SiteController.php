@@ -34,6 +34,10 @@ class SiteController extends Controller
             'profile' => [
                 'visi' => ProfileItem::where('type', 'visi')->orderBy('sort_order')->pluck('body'),
                 'misi' => ProfileItem::where('type', 'misi')->orderBy('sort_order')->pluck('body'),
+                // Narasi yang bisa diganti pengurus dari admin.
+                'sejarah' => ProfileItem::where('type', 'sejarah')->orderBy('sort_order')->pluck('body'),
+                'logo' => ProfileItem::where('type', 'logo')->orderBy('sort_order')->pluck('body'),
+                'sambutan' => ProfileItem::where('type', 'sambutan')->orderBy('sort_order')->pluck('body'),
             ],
             'cabinet' => $cabinet ? [
                 'id' => $cabinet->id,

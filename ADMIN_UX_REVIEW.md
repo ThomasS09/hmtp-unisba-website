@@ -215,3 +215,15 @@
 - Seragamkan CabinetTab ke modal seperti tab lain (sekarang masih form inline).
 - Muat ulang data per tab hanya saat tab dibuka (sekarang semua tab fetch sendiri-sendiri saat mount).
 - Di server produksi jalankan Laravel di belakang Nginx/Apache + PHP-FPM; `php artisan serve` hanya untuk lokal karena memproses satu request sekaligus (~1 s/request di Windows tanpa opcache).
+
+## Struktur Landing (perbaikan menyusul)
+
+| Temuan | Perbaikan | Bukti |
+|---|---|---|
+| Satu `<Suspense>` membungkus 9 section lazy — satu chunk lambat = seluruh halaman di bawah Hero jadi skeleton | `Suspense` + `ErrorBoundary` per section, fallback `<Skeleton />` per blok | `src/pages/LandingPage.tsx` |
+| Blok "Tentang Kami" (About) menduplikasi Sejarah / Arti Logo / nama kabinet | Blok About dihapus; narasi pindah ke blok Sejarah, Arti Logo, dan Struktur (satu sumber) | `grep -rn About src` → tidak ada; `About.tsx` dihapus |
+| Sejarah, Arti Logo, Semboyan masih teks mati di kode | Jenis butir profil diperluas: `sejarah`, `logo`, `sambutan` — diisi dari admin, teks kode jadi fallback | `ProfileItem::TYPES`, `SiteController`, tab Profil & Narasi |
+| Dua link nav menuju `#structure` (Kabinet + Struktur Organisasi) | Digabung jadi satu entri "Kabinet & Struktur"; link `#about` di Hero/Footer diarahkan ke `#structure` | `Navbar.tsx`, `Hero.tsx`, `Footer.tsx`; audit `deadLinks: []` |
+| Tab admin bernama "Profil & Visi Misi" padahal sudah memuat narasi | Jadi "Profil & Narasi", tiap jenis punya hint + contoh placeholder | `AdminDashboard.tsx`, `ProfileTab.tsx` |
+
+Bukti uji: `tsc --noEmit` bersih, `npm run build` sukses, `vitest` 5 files / 18 tests passed, `tests/integration_check.py` ALL PASS, edit narasi dari admin → landing berubah tanpa reload kode (dikembalikan setelah uji).

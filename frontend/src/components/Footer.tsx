@@ -89,7 +89,7 @@ export default function Footer() {
               <li><a href="#home" className="hover:text-primary transition-colors">Beranda</a></li>
               <li><a href="#sejarah" className="hover:text-primary transition-colors">Sejarah Himpunan</a></li>
               <li><a href="#logo-meaning" className="hover:text-primary transition-colors">Arti Lambang</a></li>
-              <li><a href="#about" className="hover:text-primary transition-colors">Semboyan Kabinet</a></li>
+              <li><a href="#structure" className="hover:text-primary transition-colors">Semboyan Kabinet</a></li>
               <li><a href="#vision-mission" className="hover:text-primary transition-colors">Visi & Misi</a></li>
               <li><a href="#structure" className="hover:text-primary transition-colors">Struktur Organisasi</a></li>
               <li><a href="#programs" className="hover:text-primary transition-colors">Program Kerja</a></li>

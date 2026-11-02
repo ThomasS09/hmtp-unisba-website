@@ -54,7 +54,7 @@ export default function Hero() {
         {/* CTA Buttons */}
         <div className="flex flex-col sm:flex-row items-center justify-center gap-4">
           <a 
-            href="#about" 
+            href="#structure" 
             className="w-full sm:w-auto px-8 py-4 bg-primary hover:bg-dark-gold text-black font-poppins font-bold rounded-lg shadow-lg shadow-primary/20 hover:shadow-primary/30 hover:-translate-y-0.5 transition-all duration-300 text-center"
           >
             Jelajahi Profil

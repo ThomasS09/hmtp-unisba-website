@@ -452,7 +452,7 @@ export default function AdminDashboard() {
 
           {(
             [
-              ['profile', '🏛️', 'Profil & Visi Misi'],
+              ['profile', '🏛️', 'Profil & Narasi'],
               ['cabinet', '⚙️', 'Kabinet'],
               ['departments', '🧩', 'Bidang'],
               ['members', '👥', 'Pengurus'],

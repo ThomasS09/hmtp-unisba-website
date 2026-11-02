@@ -45,9 +45,13 @@ export interface AspirationInput {
   is_anonymous?: boolean
 }
 
+// visi/misi dipakai blok Visi & Misi; tiga sisanya narasi halaman yang bisa
+// diganti pengurus dari admin (sejarah, arti logo, sambutan kabinet).
+export type ProfileType = 'visi' | 'misi' | 'sejarah' | 'logo' | 'sambutan'
+
 export interface ProfileItem {
   id: number
-  type: 'visi' | 'misi'
+  type: ProfileType
   body: string
   sort_order: number
 }
@@ -114,6 +118,9 @@ export interface SiteData {
   profile: {
     visi: string[]
     misi: string[]
+    sejarah?: string[]
+    logo?: string[]
+    sambutan?: string[]
   }
   cabinet: Cabinet | null
   cabinets: Cabinet[]

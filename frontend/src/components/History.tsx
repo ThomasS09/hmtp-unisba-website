@@ -1,3 +1,4 @@
+import { useSiteData } from '../hooks/useSiteData'
 import picture1 from '../assets/Picture1.jpg'
 import picture2 from '../assets/Picture2.jpg'
 
@@ -50,6 +51,9 @@ const timelineData: TimelineItem[] = [
 ]
 
 export default function History() {
+  const { data } = useSiteData()
+  // Narasi bisa diganti pengurus di admin; kalau kosong pakai teks bawaan.
+  const narasi = data?.profile?.sejarah ?? []
   return (
     <section id="sejarah" className="py-24 bg-black text-white relative overflow-hidden">
       {/* Background radial glow */}
@@ -68,6 +72,13 @@ export default function History() {
           <p className="font-inter text-sm text-gray-400 mt-4 leading-relaxed">
             Menelusuri sejarah panjang berdirinya Himpunan Mahasiswa Teknik Pertambangan Universitas Islam Bandung sejak tahun 1983.
           </p>
+          {narasi.length > 0 && (
+            <div className="mt-6 space-y-3 text-left">
+              {narasi.map((par, i) => (
+                <p key={i} className="font-inter text-sm text-gray-300 leading-relaxed">{par}</p>
+              ))}
+            </div>
+          )}
         </div>
 
         {/* Timeline Path */}

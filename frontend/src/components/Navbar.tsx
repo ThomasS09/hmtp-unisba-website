@@ -41,9 +41,8 @@ export default function Navbar() {
       items: [
         { name: 'Sejarah', href: '#sejarah' },
         { name: 'Arti Logo', href: '#logo-meaning' },
-        { name: 'Kabinet', href: '#about' },
         { name: 'Visi & Misi', href: '#vision-mission' },
-        { name: 'Struktur Organisasi', href: '#structure' },
+        { name: 'Kabinet & Struktur', href: '#structure' },
       ],
     },
     {

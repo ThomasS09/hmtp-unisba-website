@@ -1,5 +1,6 @@
 import { useState } from 'react'
 import logo from '../assets/logo.jpg'
+import { useSiteData } from '../hooks/useSiteData'
 
 interface ElementItem {
   id: string
@@ -71,6 +72,9 @@ const elements: ElementItem[] = [
 
 export default function LogoMeaning() {
   const [activeElement, setActiveElement] = useState<string | null>(null)
+  const { data } = useSiteData()
+  // Narasi tambahan dari admin; blok bawaan tetap jadi fallback.
+  const narasi = data?.profile?.logo ?? []
 
   return (
     <section id="logo-meaning" className="py-24 bg-light-gray text-white relative overflow-hidden">
@@ -90,6 +94,13 @@ export default function LogoMeaning() {
           <p className="font-inter text-sm text-gray-400 mt-4 leading-relaxed">
             Setiap simbol dan warna pada lambang himpunan merepresentasikan identitas, visi keislaman, dan semangat perjuangan teknik pertambangan.
           </p>
+          {narasi.length > 0 && (
+            <div className="mt-6 space-y-3">
+              {narasi.map((par, i) => (
+                <p key={i} className="font-inter text-sm text-gray-300 leading-relaxed">{par}</p>
+              ))}
+            </div>
+          )}
         </div>
 
         {/* Layout: Logo Display and Info Cards */}
